@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["master", "main"]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   branch-prefix:
     name: Check branch prefix
@@ -64,6 +69,49 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml \
             -q
+          uv run coverage report --format=markdown > coverage-report.md
+
+      - name: Comment coverage report
+        if: github.event_name == 'pull_request' && matrix.python-version == '3.12'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- coverage-report -->';
+            const report = fs.readFileSync('coverage-report.md', 'utf8');
+            const body = [
+              marker,
+              '## Coverage report',
+              '',
+              report,
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const existing = comments.find((comment) =>
+              comment.user.type === 'Bot' && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
