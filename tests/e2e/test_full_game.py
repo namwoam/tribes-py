@@ -7,7 +7,7 @@ from tribes.players.random_agent import RandomAgent
 from tribes.players.simple_agent import SimpleAgent
 
 
-LEVEL = "levels/SampleLevel.csv"
+LEVEL = "levels/sample_level.csv"
 SEED = 42
 
 
@@ -60,7 +60,7 @@ def test_simple_agent_wins_against_do_nothing(tmp_path):
     """SimpleAgent should beat DoNothingAgents in the 2-player level."""
     players = [SimpleAgent(10), DoNothingAgent(20)]
     game = Game()
-    game.init(players, "levels/SampleLevel2p.csv", SEED, GAME_MODE.CAPITALS)
+    game.init(players, "levels/sample_level_2p.csv", SEED, GAME_MODE.CAPITALS)
     game.run()
     ranking = game.get_current_ranking()
     # SimpleAgent is player 0; check its result
@@ -78,7 +78,7 @@ def test_game_scores_nonnegative():
 def test_game_2p_level_completes():
     players = [RandomAgent(0), DoNothingAgent(1)]
     game = Game()
-    game.init(players, "levels/SampleLevel2p.csv", SEED, GAME_MODE.SCORE)
+    game.init(players, "levels/sample_level_2p.csv", SEED, GAME_MODE.SCORE)
     game.run()
     assert len(game.get_current_ranking()) == 2
 

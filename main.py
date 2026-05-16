@@ -9,7 +9,7 @@ Run with GUI:
     python main.py --gui
 
 Run a tournament via JSON config:
-    python main.py --tournament tournament.json
+    python main.py --tournament config.json
 """
 from __future__ import annotations
 

@@ -13,7 +13,7 @@ def loaded_gs():
     rnd = random.Random(0)
     from tribes.game.game_state import GameState
     gs = GameState(rnd, GAME_MODE.SCORE)
-    gs.init("levels/SampleLevel.csv")
+    gs.init("levels/sample_level.csv")
     tribe = gs.get_tribes()[0]
     gs.init_turn(tribe)
     gs.compute_player_actions(tribe)
