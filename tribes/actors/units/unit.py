@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tribes.actors.actor import Actor
 from tribes.types import TURN_STATUS, UNIT as UNIT_TYPE

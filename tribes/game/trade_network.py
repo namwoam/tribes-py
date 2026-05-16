@@ -5,7 +5,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from tribes.utils.path_node import PathNode
-from tribes.utils.pathfinder import Pathfinder, NeighbourHelper
+from tribes.utils.pathfinder import Pathfinder
 from tribes.utils.vector2d import Vector2d
 from tribes import config as cfg
 from tribes.types import TERRAIN, BUILDING
@@ -156,7 +156,6 @@ class TradeNetwork:
                 if path is not None:
                     tns.add_jump_link(port_from, port_to, True)
 
-        from tribes.actors.city import City as CityActor
         capital = board.get_actor(tribe.get_capital_id())
         pf = Pathfinder(capital.get_position(), tns)
         tribe.update_network(pf, board, tribe.tribe_id == board.get_active_tribe_id())

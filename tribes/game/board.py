@@ -205,7 +205,6 @@ class Board:
         return True
 
     def embark(self, unit: Unit, tribe: Tribe, x: int, y: int) -> None:
-        from tribes.actors.units.boat import Boat
         city = self._game_actors.get(unit.get_city_id())
         self.remove_unit_from_board(unit)
         self.remove_unit_from_city(unit, city, tribe)
@@ -491,7 +490,6 @@ class Board:
     def get_unit_at(self, x: int, y: int) -> Optional[Unit]:
         act = self._game_actors.get(self._units[x][y])
         if act is not None:
-            from tribes.actors.units.unit import Unit as UnitActor
             return act  # type: ignore[return-value]
         return None
 

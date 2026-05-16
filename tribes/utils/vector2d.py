@@ -138,9 +138,9 @@ class Vector2d:
         return self.x * v.x + self.y * v.y
 
     def unit_vector(self) -> Vector2d:
-        l = self.mag()
-        if l > 0:
-            return Vector2d(int(self.x / l), int(self.y / l))
+        mag = self.mag()
+        if mag > 0:
+            return Vector2d(int(self.x / mag), int(self.y / mag))
         return Vector2d(1, 0)
 
     def adjacent_to(self, v: Vector2d) -> bool:

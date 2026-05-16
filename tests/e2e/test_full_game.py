@@ -1,5 +1,4 @@
 "End-to-end tests: full game runs with different agent combinations."
-import pytest
 from tribes.types import GAME_MODE, RESULT
 from tribes.game.game import Game
 from tribes.players.do_nothing_agent import DoNothingAgent

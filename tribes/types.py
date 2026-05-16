@@ -540,7 +540,7 @@ class UNIT(Enum):
     ARCHER     = (4,  "img/unit/archer/",     "img/weapons/arrows/",           None,          "ARCHERY")
     CATAPULT   = (5,  "img/unit/catapult/",   "img/weapons/bombs/rock.png",    None,          "MATHEMATICS")
     KNIGHT     = (6,  "img/unit/knight/",     "img/weapons/melee/spear.png",   None,          "CHIVALRY")
-    MIND_BENDER= (7,  "img/unit/mind_bender/","img/weapons/effects/bender/",   None,          "PHILOSOPHY")
+    MIND_BENDER = (7, "img/unit/mind_bender/","img/weapons/effects/bender/",   None,          "PHILOSOPHY")  # noqa: E221,E201
     BOAT       = (8,  "img/unit/boat/",       "img/weapons/arrows/boat.png",   None,          "SAILING")
     SHIP       = (9,  "img/unit/ship/",       "img/weapons/bombs/",            None,          "SAILING")
     BATTLESHIP = (10, "img/unit/battleship/", "img/weapons/bombs/",            None,          "NAVIGATION")

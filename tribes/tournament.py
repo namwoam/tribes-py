@@ -4,9 +4,7 @@ from __future__ import annotations
 import logging
 import random
 import time
-from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Optional
 
 from tribes.types import GAME_MODE, TRIBE as TRIBE_TYPE
 from tribes import constants as C
@@ -71,9 +69,6 @@ class Tournament:
     # ------------------------------------------------------------------
 
     def run(self, repetitions: int = 1, shift_tribes: bool = True) -> None:
-        from tribes.game.game import Game
-        from tribes.tournament import _make_agent
-
         starter = 0
         total = len(self._seeds) * repetitions
 
@@ -172,7 +167,6 @@ class Tournament:
 # ---------------------------------------------------------------------------
 
 def _make_agent(player_type: str, seed: int) -> "Agent":
-    from tribes.players.agent import Agent
     from tribes.players.random_agent import RandomAgent
     from tribes.players.do_nothing_agent import DoNothingAgent
     from tribes.players.simple_agent import SimpleAgent

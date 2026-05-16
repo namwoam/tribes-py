@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import heapq
-from typing import TYPE_CHECKING, Callable, Optional, Protocol
+from typing import TYPE_CHECKING, Optional, Protocol
 
 if TYPE_CHECKING:
     from tribes.utils.vector2d import Vector2d

@@ -1,5 +1,4 @@
 "Unit tests for types.py enums."
-import pytest
 from tribes.types import ACTION, GAME_MODE, RESULT, TERRAIN, TRIBE, TECHNOLOGY, UNIT
 
 

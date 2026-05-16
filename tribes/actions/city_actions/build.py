@@ -5,13 +5,13 @@ import logging
 from typing import TYPE_CHECKING, Optional
 
 from tribes.actions.city_actions.city_action import CityAction
-from tribes.types import ACTION, BUILDING, TECHNOLOGY, RESOURCE, TERRAIN
+from tribes.types import ACTION, BUILDING, TERRAIN
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from tribes.utils.vector2d import Vector2d
-    from tribes.game.game_state import GameState
+    from tribes.utils.vector2d import Vector2d  # noqa: F401
+    from tribes.game.game_state import GameState  # noqa: F401
 
 
 class Build(CityAction):

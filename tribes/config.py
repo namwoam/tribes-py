@@ -180,18 +180,22 @@ WHALES_STARS: int  = 10
 FRUIT_POP: int     = 1
 
 # Resource constraints (typed references - imported lazily to avoid circular)
+
 def _get_farm_res_constraint():
     from tribes.types import RESOURCE
     return RESOURCE.CROPS
+
 
 def _get_mine_res_constraint():
     from tribes.types import RESOURCE
     return RESOURCE.ORE
 
+
 # Convenience aliases for modules that import these directly
 @property
 def FARM_RES_CONSTRAINT():
     return _get_farm_res_constraint()
+
 
 @property
 def MINE_RES_CONSTRAINT():
@@ -239,9 +243,11 @@ TECH_DISCOUNT_VALUE: float = 0.2
 TECH_TIER_POINTS: int      = 100
 
 # TECH_DISCOUNT is Types.TECHNOLOGY.PHILOSOPHY — imported lazily
+
 def get_tech_discount():
     from tribes.types import TECHNOLOGY
     return TECHNOLOGY.PHILOSOPHY
+
 
 # ---------------------------------------------------------------------------
 # TRIBES

@@ -143,7 +143,6 @@ class SimpleAgent(Agent):
         return city.get_level() + 1 - city.get_production()
 
     def _eval_road(self, a: Action, gs: GameState, tribe: Tribe) -> int:
-        from tribes.utils.vector2d import Vector2d
         pos = a.get_position()
         board = gs.get_board()
         for neigh in pos.neighborhood(1, 0, board.get_size()):
