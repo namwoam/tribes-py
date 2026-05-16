@@ -2,7 +2,7 @@
 name = "tribes-py"
 version = "0.1.0"
 description = "Python port of Tribes strategy game"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "pygame>=2.6.0",
 ]
