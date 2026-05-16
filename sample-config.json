@@ -1,0 +1,9 @@
+{
+  "Game Mode": "Capitals",
+  "Repetitions": 3,
+  "Shift Tribes": true,
+  "Verbose": false,
+  "Players": ["random", "simple", "random", "simple"],
+  "Tribes": ["Imperius", "Bardur", "Oumaji", "Xin Xi"],
+  "Level Seeds": [42, 123]
+}
