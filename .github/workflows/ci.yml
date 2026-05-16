@@ -48,8 +48,8 @@ jobs:
         run: |
           uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('tribes', quiet=True, force=True) else 1)"
 
-      - name: Lint with flake8
-        run: uv run flake8 tribes tests main.py
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
 
       - name: Run unit tests
         run: uv run pytest tests/unit/ -v --tb=short
