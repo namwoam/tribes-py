@@ -82,6 +82,7 @@ class Tournament:
             print(f"**** Playing level with seed {level_seed} ****")
 
             rep = 0
+            attempts = 0
             while rep < repetitions:
                 assignment: dict[TRIBE_TYPE, int] = {}
                 ordered_types: list[str] = []
@@ -109,7 +110,12 @@ class Tournament:
                     if shift_tribes:
                         starter = (starter + 1) % n
                     rep += 1
+                    attempts = 0
                 except Exception as exc:
+                    attempts += 1
+                    if attempts >= 3:
+                        logger.exception("Error running game; giving up: %s", exc)
+                        raise
                     logger.exception("Error running game, retrying: %s", exc)
 
         self._print_results()
