@@ -5,7 +5,7 @@ from tribes.types import GAME_MODE, ACTION
 from tribes.game.game_state import GameState
 
 
-LEVEL = "levels/SampleLevel.csv"
+LEVEL = "levels/sample_level.csv"
 
 
 @pytest.fixture()
