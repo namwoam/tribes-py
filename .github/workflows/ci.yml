@@ -71,7 +71,36 @@ jobs:
             -q
           uv run coverage report --format=markdown > coverage-report.md
 
-      - name: Comment coverage report
+      - name: Run sample performance report
+        if: matrix.python-version == '3.12'
+        run: |
+          /usr/bin/time -p -o sample-time.txt \
+            uv run python main.py \
+              --level levels/sample_level.csv \
+              --players random \
+              --players random \
+              --players random \
+              --players random \
+              --seed 42 \
+              > sample-output.txt
+
+          elapsed="$(awk '/^real / { print $2 }' sample-time.txt)"
+          {
+            echo "### Performance report"
+            echo ""
+            echo "| Sample | Seed | Elapsed time |"
+            echo "|---|---:|---:|"
+            echo "| \`levels/sample_level.csv\` with 4 random agents | \`42\` | \`${elapsed}s\` |"
+            echo ""
+            echo "<details><summary>Command</summary>"
+            echo ""
+            echo '```bash'
+            echo 'uv run python main.py --level levels/sample_level.csv --players random --players random --players random --players random --seed 42'
+            echo '```'
+            echo "</details>"
+          } > performance-report.md
+
+      - name: Comment CI report
         if: github.event_name == 'pull_request' && matrix.python-version == '3.12'
         uses: actions/github-script@v7
         with:
@@ -79,11 +108,16 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- coverage-report -->';
             const report = fs.readFileSync('coverage-report.md', 'utf8');
+            const performanceReport = fs.readFileSync('performance-report.md', 'utf8');
             const body = [
               marker,
-              '## Coverage report',
+              '## CI report',
+              '',
+              '### Coverage report',
               '',
               report,
+              '',
+              performanceReport,
             ].join('\n');
 
             const { owner, repo } = context.repo;
