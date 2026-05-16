@@ -29,13 +29,13 @@ uv sync              # installs core + dev extras
 uv run python main.py
 
 # Specify a level and agents
-uv run python main.py --level levels/sample_level.csv --players random simple
+uv run python main.py --level levels/sample_level.csv --players random --players simple
 
 # Enable the pygame GUI
 uv run python main.py --level levels/sample_level.csv --gui
 
 # Score mode instead of Capitals
-uv run python main.py --mode score --players random donothing random donothing
+uv run python main.py --mode score --players random --players donothing --players random --players donothing
 
 # Set a fixed seed
 uv run python main.py --seed 42
@@ -46,7 +46,7 @@ uv run python main.py --seed 42
 | Flag | Default | Description |
 |---|---|---|
 | `--level FILE` | auto-detect | Path to a CSV level file |
-| `--players TYPE…` | `random random` | Agent types per player slot |
+| `--players TYPE` | `random random` | Agent type per player slot; repeat for multiple players |
 | `--mode capitals\|score` | `capitals` | Win condition |
 | `--seed INT` | random | RNG seed for reproducibility |
 | `--gui` | off | Open pygame window |

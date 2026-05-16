@@ -691,6 +691,7 @@ name = "tribes-py"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "pygame" },
 ]
 
@@ -708,6 +709,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "bump-my-version", marker = "extra == 'dev'", specifier = ">=0.28" },
+    { name = "click", specifier = ">=8.0" },
     { name = "flake8", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0" },
     { name = "pygame", specifier = ">=2.6.0" },

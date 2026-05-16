@@ -13,12 +13,12 @@ Run a tournament via JSON config:
 """
 from __future__ import annotations
 
-import argparse
 import json
 import logging
-import sys
 import time
 from pathlib import Path
+
+import click
 
 from tribes import constants as C
 from tribes.types import GAME_MODE, TRIBE as TRIBE_TYPE
@@ -90,7 +90,7 @@ def run_tournament(config_path: str) -> None:
     player_names: list[str] = cfg["Players"]
     tribe_names: list[str] = cfg["Tribes"]
     if len(player_names) != len(tribe_names):
-        sys.exit("Number of players must equal number of tribes.")
+        raise click.ClickException("Number of players must equal number of tribes.")
 
     tribes = [_parse_tribe(t) for t in tribe_names]
     raw_seeds = cfg.get("Level Seeds", [-1])
@@ -107,60 +107,94 @@ def run_tournament(config_path: str) -> None:
 # CLI
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Tribes-py game runner")
-    parser.add_argument(
-        "--tournament", metavar="JSON", default=None,
-        help="Path to tournament JSON config file.",
-    )
-    parser.add_argument(
-        "--level", metavar="FILE", default=None,
-        help="Level file to load for a single game.",
-    )
-    parser.add_argument(
-        "--players", nargs="+", default=["random", "random"],
-        help="Agent types for a single game (e.g. random simple).",
-    )
-    parser.add_argument(
-        "--mode", choices=["capitals", "score"], default="capitals",
-        help="Game mode.",
-    )
-    parser.add_argument(
-        "--seed", type=int, default=None,
-        help="Random seed.",
-    )
-    parser.add_argument(
-        "--gui", action="store_true",
-        help="Enable pygame GUI.",
-    )
-    parser.add_argument(
-        "--verbose", action="store_true", default=False,
-        help="Enable verbose output.",
-    )
-    args = parser.parse_args()
+@click.command(
+    context_settings={
+        "allow_extra_args": True,
+        "help_option_names": ["-h", "--help"],
+    }
+)
+@click.option(
+    "--tournament",
+    type=click.Path(exists=True, dir_okay=False, path_type=str),
+    metavar="JSON",
+    help="Path to tournament JSON config file.",
+)
+@click.option(
+    "--level",
+    type=click.Path(exists=True, dir_okay=False, path_type=str),
+    metavar="FILE",
+    help="Level file to load for a single game.",
+)
+@click.option(
+    "--players",
+    "player_types",
+    multiple=True,
+    default=("random", "random"),
+    metavar="TYPE",
+    show_default="random, random",
+    help="Agent type for a single game. Repeat for each player slot.",
+)
+@click.option(
+    "--mode",
+    type=click.Choice(["capitals", "score"], case_sensitive=False),
+    default="capitals",
+    show_default=True,
+    help="Game mode.",
+)
+@click.option(
+    "--seed",
+    type=int,
+    default=None,
+    help="Random seed.",
+)
+@click.option(
+    "--gui",
+    is_flag=True,
+    help="Enable pygame GUI.",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    help="Enable verbose output.",
+)
+@click.pass_context
+def main(
+    ctx: click.Context,
+    tournament: str | None,
+    level: str | None,
+    player_types: tuple[str, ...],
+    mode: str,
+    seed: int | None,
+    gui: bool,
+    verbose: bool,
+) -> None:
+    """Tribes-py game runner."""
+    if ctx.args:
+        if player_types == ("random", "random"):
+            raise click.UsageError(f"Unexpected argument(s): {' '.join(ctx.args)}")
+        player_types = (*player_types, *ctx.args)
 
-    if args.verbose:
+    if verbose:
         C.VERBOSE = True
 
-    seed = args.seed if args.seed is not None else int(time.time() * 1000) & 0xFFFF_FFFF
+    seed = seed if seed is not None else int(time.time() * 1000) & 0xFFFF_FFFF
 
-    if args.tournament:
-        run_tournament(args.tournament)
+    if tournament:
+        run_tournament(tournament)
     else:
-        level = args.level
         if level is None:
             # Find first available level file
-            candidates = sorted(Path(".").rglob("*.txt"))
+            candidates = sorted(Path(".").rglob("*.csv"))
             level_candidates = [str(p) for p in candidates if "level" in p.name.lower()]
             if not level_candidates:
                 level_candidates = [str(p) for p in candidates]
             if not level_candidates:
-                sys.exit("No level file found. Use --level <file>.")
+                raise click.ClickException("No level file found. Use --level <file>.")
             level = level_candidates[0]
             logger.info("Using level file: %s", level)
 
-        game_mode = GAME_MODE.CAPITALS if args.mode == "capitals" else GAME_MODE.SCORE
-        run_single_game(level, args.players, seed, game_mode, args.gui)
+        game_mode = GAME_MODE.CAPITALS if mode.lower() == "capitals" else GAME_MODE.SCORE
+        run_single_game(level, list(player_types), seed, game_mode, gui)
 
 
 if __name__ == "__main__":
