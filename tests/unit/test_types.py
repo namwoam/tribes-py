@@ -1,14 +1,15 @@
 "Unit tests for types.py enums."
 
+from itertools import combinations
+
 from tribes.types import ACTION, GAME_MODE, RESULT, TERRAIN, TRIBE, TECHNOLOGY, UNIT
 
 
 def test_action_enum_all_unique():
     """No two ACTION members should be aliases (same identity) of each other."""
     members = list(ACTION)
-    for i, a in enumerate(members):
-        for b in members[i + 1 :]:
-            assert a is not b, f"{a.name} and {b.name} are aliases"
+    for a, b in combinations(members, 2):
+        assert a is not b, f"{a.name} and {b.name} are aliases"
 
 
 def test_action_end_turn_distinct_from_build():
