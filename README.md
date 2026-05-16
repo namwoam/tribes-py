@@ -120,9 +120,7 @@ uv run pre-commit run --all-files
 
 ## Version bumping
 
-PR branches must start with `major/`, `minor/`, or `patch/`. Merging one of these branches into `master` or `main` automatically bumps `pyproject.toml`, commits the new version, publishes the package to PyPI, and deletes the merged branch via GitHub Actions.
-
-PyPI publishing uses trusted publishing with the GitHub Actions environment named `pypi`.
+PR branches must start with `major/`, `minor/`, or `patch/`. Merging one of these branches into `master` or `main` automatically bumps `pyproject.toml`, commits the new version, creates a GitHub Release, uploads the built distributions as release assets, and deletes the merged branch via GitHub Actions.
 
 ## Game modes
 
