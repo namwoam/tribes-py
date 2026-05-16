@@ -1,15 +1,21 @@
 "Tournament runner, ported from Tournament.java."
+
 from __future__ import annotations
 
 import logging
 import random
 import time
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from tribes.types import GAME_MODE, TRIBE as TRIBE_TYPE
 from tribes import constants as C
+from tribes.types import GAME_MODE, TRIBE as TRIBE_TYPE
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from tribes.game.game import Game
+    from tribes.players.agent import Agent
 
 
 @dataclass
@@ -54,9 +60,7 @@ class Tournament:
 
     def set_players(self, player_types: list[str]) -> None:
         self._player_types = list(player_types)
-        self._stats = [
-            ParticipantStats(i, pt) for i, pt in enumerate(player_types)
-        ]
+        self._stats = [ParticipantStats(i, pt) for i, pt in enumerate(player_types)]
 
     def set_tribes(self, tribes: list[TRIBE_TYPE]) -> None:
         self._tribes = list(tribes)
@@ -93,8 +97,10 @@ class Tournament:
                     ordered_tribes.append(tribe)
                     next_idx += 1
 
-                print(f"Playing [{', '.join(ordered_types)}] "
-                      f"({seed_idx * repetitions + rep + 1}/{total})")
+                print(
+                    f"Playing [{', '.join(ordered_types)}] "
+                    f"({seed_idx * repetitions + rep + 1}/{total})"
+                )
 
                 try:
                     game = self._prepare_game(ordered_tribes, level_seed, ordered_types)
@@ -108,8 +114,9 @@ class Tournament:
 
         self._print_results()
 
-    def _prepare_game(self, tribes: list[TRIBE_TYPE], level_seed: int,
-                      player_types: list[str]) -> "Game":
+    def _prepare_game(
+        self, tribes: list[TRIBE_TYPE], level_seed: int, player_types: list[str]
+    ) -> "Game":
         from tribes.game.game import Game
         from tribes.tournament import _make_agent
 
@@ -122,9 +129,9 @@ class Tournament:
         game.init_generated(players, level_seed, tribes, game_seed, self._game_mode)
         return game
 
-    def _record_results(self, game: "Game",
-                        assignment: dict[TRIBE_TYPE, int]) -> None:
+    def _record_results(self, game: "Game", assignment: dict[TRIBE_TYPE, int]) -> None:
         from tribes.types import RESULT
+
         ranking = game.get_current_ranking()
         board = game.get_board()
         for tr in ranking:
@@ -144,9 +151,14 @@ class Tournament:
         sorted_stats = sorted(
             self._stats,
             key=lambda s: (
-                -s.v.sum(), -s.s.mean(), -s.t.mean(),
-                -s.c.mean(), -s.p.mean(), -s.d.mean(), -s.r.mean()
-            )
+                -s.v.sum(),
+                -s.s.mean(),
+                -s.t.mean(),
+                -s.c.mean(),
+                -s.p.mean(),
+                -s.d.mean(),
+                -s.r.mean(),
+            ),
         )
         print("--------- RESULTS ---------")
         for st in sorted_stats:
@@ -165,6 +177,7 @@ class Tournament:
 # ---------------------------------------------------------------------------
 # Factory helper (analogous to Run.getAgent in Java)
 # ---------------------------------------------------------------------------
+
 
 def _make_agent(player_type: str, seed: int) -> "Agent":
     from tribes.players.random_agent import RandomAgent

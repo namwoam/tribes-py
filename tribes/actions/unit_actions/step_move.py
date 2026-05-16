@@ -1,4 +1,5 @@
 "StepMove NeighbourHelper for unit pathfinding, ported from StepMove.java."
+
 from __future__ import annotations
 
 import logging
@@ -32,8 +33,10 @@ class StepMove:
         unit = self._unit
         on_road = False
 
-        if (board.is_road(frm.x, frm.y)
-                or board.get_terrain_at(frm.x, frm.y) is TERRAIN.CITY):
+        if (
+            board.is_road(frm.x, frm.y)
+            or board.get_terrain_at(frm.x, frm.y) is TERRAIN.CITY
+        ):
             city_id = board.get_city_id_at(frm.x, frm.y)
             if city_id == -1 or board.get_tribe(unit.tribe_id).controls_city(city_id):
                 on_road = True
@@ -63,37 +66,60 @@ class StepMove:
                 continue
 
             # Mind benders can't enter enemy city tiles
-            if (unit.get_type() is UNIT_TYPE.MIND_BENDER
-                    and terrain is TERRAIN.CITY):
+            if unit.get_type() is UNIT_TYPE.MIND_BENDER and terrain is TERRAIN.CITY:
                 target_city = board.get_actor(board.get_city_id_at(tile.x, tile.y))
                 if target_city is not None and target_city.tribe_id != unit.tribe_id:
                     continue
 
             if unit.get_type().is_water_unit():
-                if terrain in (TERRAIN.CITY, TERRAIN.PLAIN, TERRAIN.FOREST,
-                               TERRAIN.VILLAGE, TERRAIN.MOUNTAIN):
-                    step_cost = (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
-                elif terrain in (TERRAIN.FOG, TERRAIN.DEEP_WATER, TERRAIN.SHALLOW_WATER):
+                if terrain in (
+                    TERRAIN.CITY,
+                    TERRAIN.PLAIN,
+                    TERRAIN.FOREST,
+                    TERRAIN.VILLAGE,
+                    TERRAIN.MOUNTAIN,
+                ):
+                    step_cost = (
+                        (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
+                    )
+                elif terrain in (
+                    TERRAIN.FOG,
+                    TERRAIN.DEEP_WATER,
+                    TERRAIN.SHALLOW_WATER,
+                ):
                     step_cost = 1.0
                 else:
                     step_cost = 1.0
             else:
                 if terrain in (TERRAIN.SHALLOW_WATER, TERRAIN.DEEP_WATER):
                     if board.get_building_at(tile.x, tile.y) is BUILDING.PORT:
-                        step_cost = (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
+                        step_cost = (
+                            (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
+                        )
                     else:
                         continue
-                elif terrain in (TERRAIN.FOG, TERRAIN.PLAIN, TERRAIN.CITY, TERRAIN.VILLAGE):
+                elif terrain in (
+                    TERRAIN.FOG,
+                    TERRAIN.PLAIN,
+                    TERRAIN.CITY,
+                    TERRAIN.VILLAGE,
+                ):
                     step_cost = 1.0
                 elif terrain in (TERRAIN.FOREST, TERRAIN.MOUNTAIN):
-                    step_cost = (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
+                    step_cost = (
+                        (unit.MOV - cost_from) if cost_from < unit.MOV else unit.MOV
+                    )
                 else:
                     step_cost = 1.0
 
-                if on_road and (board.is_road(tile.x, tile.y)
-                                or board.get_terrain_at(tile.x, tile.y) is TERRAIN.CITY):
+                if on_road and (
+                    board.is_road(tile.x, tile.y)
+                    or board.get_terrain_at(tile.x, tile.y) is TERRAIN.CITY
+                ):
                     city_id2 = board.get_city_id_at(frm.x, frm.y)
-                    if city_id2 == -1 or board.get_tribe(unit.tribe_id).controls_city(city_id2):
+                    if city_id2 == -1 or board.get_tribe(unit.tribe_id).controls_city(
+                        city_id2
+                    ):
                         step_cost = max(0.5, step_cost / 2.0)
 
             if zone_of_control:

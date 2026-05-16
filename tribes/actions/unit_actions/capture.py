@@ -1,4 +1,5 @@
 "Capture action + command."
+
 from __future__ import annotations
 
 import logging
@@ -69,8 +70,12 @@ class Capture(UnitAction):
             this_tribe.add_score(target_city.get_points_worth())
 
             d = b.get_diplomacy()
-            d.update_allegiance(cfg.CAPTURE_REPERCUSSION, this_tribe.tribe_id, target_tribe.tribe_id)
-            d.check_consequences(cfg.CAPTURE_REPERCUSSION, this_tribe.tribe_id, target_tribe.tribe_id)
+            d.update_allegiance(
+                cfg.CAPTURE_REPERCUSSION, this_tribe.tribe_id, target_tribe.tribe_id
+            )
+            d.check_consequences(
+                cfg.CAPTURE_REPERCUSSION, this_tribe.tribe_id, target_tribe.tribe_id
+            )
 
             unit.set_status(TURN_STATUS.FINISHED)
             city_pos = target_city.get_position()
@@ -88,11 +93,16 @@ class Capture(UnitAction):
         return c
 
     def __str__(self) -> str:
-        return f"CAPTURE by unit {self.unit_id} of target {self._capture_type}: {self._target_city_id}"
+        return (
+            f"CAPTURE by unit {self.unit_id} of target "
+            f"{self._capture_type}: {self._target_city_id}"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Capture):
             return False
-        return (super().__eq__(other)
-                and self._target_city_id == other._target_city_id
-                and self._capture_type == other._capture_type)
+        return (
+            super().__eq__(other)
+            and self._target_city_id == other._target_city_id
+            and self._capture_type == other._capture_type
+        )

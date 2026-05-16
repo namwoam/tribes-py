@@ -1,4 +1,5 @@
 "A*/Dijkstra pathfinder ported from Pathfinder.java."
+
 from __future__ import annotations
 
 import heapq
@@ -13,11 +14,9 @@ from tribes.utils.path_node import PathNode
 class NeighbourHelper(Protocol):
     """Interface for graph neighbour providers."""
 
-    def get_neighbours(self, frm: Vector2d, cost_from: float) -> list[PathNode]:
-        ...
+    def get_neighbours(self, frm: Vector2d, cost_from: float) -> list[PathNode]: ...
 
-    def add_jump_link(self, frm: Vector2d, to: Vector2d, reverse: bool) -> None:
-        ...
+    def add_jump_link(self, frm: Vector2d, to: Vector2d, reverse: bool) -> None: ...
 
 
 class Pathfinder:
@@ -72,7 +71,9 @@ class Pathfinder:
             if node is not self.root:
                 destinations.append(node)
 
-            neighbours = self._provider.get_neighbours(node.get_position(), node.get_total_cost())
+            neighbours = self._provider.get_neighbours(
+                node.get_position(), node.get_total_cost()
+            )
             for nb in neighbours:
                 nb_cost = nb.get_total_cost()
 
@@ -105,7 +106,9 @@ class Pathfinder:
         closed_set: set[PathNode] = set()
 
         self.root.set_total_cost(0.0)
-        dist = Vector2d.chebychev_distance(self.root.get_position(), goal.get_position())
+        dist = Vector2d.chebychev_distance(
+            self.root.get_position(), goal.get_position()
+        )
         self.root.set_estimated_cost(dist)
         heapq.heappush(open_list, self.root)
         self.nodes.add(self.root)
@@ -117,7 +120,9 @@ class Pathfinder:
             if node.get_x() == goal.get_x() and node.get_y() == goal.get_y():
                 return self._calculate_path(node)
 
-            neighbours = self._provider.get_neighbours(node.get_position(), node.get_total_cost())
+            neighbours = self._provider.get_neighbours(
+                node.get_position(), node.get_total_cost()
+            )
             for nb in neighbours:
                 nb_cost = nb.get_total_cost()
 

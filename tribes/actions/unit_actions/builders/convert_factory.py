@@ -1,6 +1,8 @@
 "ConvertFactory."
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tribes.actors.units.unit import Unit
     from tribes.game.game_state import GameState
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 class ConvertFactory:
     def compute_action_variants(self, unit: Unit, gs: GameState) -> list[Action]:
         from tribes.actions.unit_actions.convert import Convert
+
         converts: list[Action] = []
         if not unit.can_attack():
             return converts

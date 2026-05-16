@@ -1,14 +1,18 @@
 "Pygame-based GUI for Tribes-py, replacing the Java Swing GUI."
+
 from __future__ import annotations
 
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from tribes.types import RESULT, TERRAIN
+
 logger = logging.getLogger(__name__)
 
 try:
     import pygame
+
     _HAS_PYGAME = True
 except ImportError:
     _HAS_PYGAME = False
@@ -19,26 +23,20 @@ if TYPE_CHECKING:
     from tribes.game.game_state import GameState
     from tribes.actions.action import Action
 
-# ---------------------------------------------------------------------------
-# Terrain / BUILDING / UNIT colour fallbacks (used when no image available)
-# ---------------------------------------------------------------------------
-
-from tribes.types import TERRAIN, RESULT
-
 _TERRAIN_COLORS: dict[TERRAIN, tuple[int, int, int]] = {
-    TERRAIN.PLAIN:         (200, 210, 150),
+    TERRAIN.PLAIN: (200, 210, 150),
     TERRAIN.SHALLOW_WATER: (100, 180, 240),
-    TERRAIN.DEEP_WATER:    (30,  90, 180),
-    TERRAIN.MOUNTAIN:      (140, 120,  90),
-    TERRAIN.VILLAGE:       (230, 200, 120),
-    TERRAIN.CITY:          (210, 140,  60),
-    TERRAIN.FOREST:        ( 60, 140,  60),
-    TERRAIN.FOG:           ( 80,  80,  80),
+    TERRAIN.DEEP_WATER: (30, 90, 180),
+    TERRAIN.MOUNTAIN: (140, 120, 90),
+    TERRAIN.VILLAGE: (230, 200, 120),
+    TERRAIN.CITY: (210, 140, 60),
+    TERRAIN.FOREST: (60, 140, 60),
+    TERRAIN.FOG: (80, 80, 80),
 }
 
 _RESULT_LABEL: dict[RESULT, str] = {
-    RESULT.WIN:        "WIN",
-    RESULT.LOSS:       "LOSS",
+    RESULT.WIN: "WIN",
+    RESULT.LOSS: "LOSS",
     RESULT.INCOMPLETE: "",
 }
 
@@ -72,9 +70,9 @@ def _load_image(rel_path: str, size: tuple[int, int]) -> "pygame.Surface":
 # GUI
 # ---------------------------------------------------------------------------
 
-_CELL = 40           # pixels per tile
-_SIDE_W = 260        # side-panel width
-_INFO_H = 160        # bottom info-bar height
+_CELL = 40  # pixels per tile
+_SIDE_W = 260  # side-panel width
+_INFO_H = 160  # bottom info-bar height
 _FPS = 30
 
 
@@ -192,7 +190,9 @@ class GUI:
 
                 # Road overlay
                 if board.is_road(x, y):
-                    road_rect = pygame.Rect(px + _CELL // 2 - 2, py + _CELL // 2 - 2, 4, 4)
+                    road_rect = pygame.Rect(
+                        px + _CELL // 2 - 2, py + _CELL // 2 - 2, 4, 4
+                    )
                     pygame.draw.rect(self._screen, (180, 140, 80), road_rect)
 
         # Draw cities
@@ -242,16 +242,21 @@ class GUI:
                 bar_h = 3
                 bar_x = px + 4
                 bar_y = py + _CELL - 5
-                pygame.draw.rect(self._screen, (200, 0, 0),
-                                 (bar_x, bar_y, bar_w, bar_h))
-                pygame.draw.rect(self._screen, (0, 200, 0),
-                                 (bar_x, bar_y, int(bar_w * hp_ratio), bar_h))
+                pygame.draw.rect(
+                    self._screen, (200, 0, 0), (bar_x, bar_y, bar_w, bar_h)
+                )
+                pygame.draw.rect(
+                    self._screen,
+                    (0, 200, 0),
+                    (bar_x, bar_y, int(bar_w * hp_ratio), bar_h),
+                )
 
                 # First letter of unit type
                 unit_char = unit.get_type().name[0]
                 lbl = self._font_sm.render(unit_char, True, (0, 0, 0))
-                self._screen.blit(lbl, (cx - lbl.get_width() // 2,
-                                        cy - lbl.get_height() // 2))
+                self._screen.blit(
+                    lbl, (cx - lbl.get_width() // 2, cy - lbl.get_height() // 2)
+                )
 
         # Highlight active tribe's capital region lightly
         active_id = gs.get_active_tribe_id()
@@ -283,11 +288,15 @@ class GUI:
         if active_id >= 0:
             tribe = gs.get_tribe(active_id)
             tribe_color = tribe.get_type().get_color()
-            name_lbl = self._font_lg.render(f"Acting: {tribe.get_type().get_name()}", True, tribe_color)
+            name_lbl = self._font_lg.render(
+                f"Acting: {tribe.get_type().get_name()}", True, tribe_color
+            )
             self._screen.blit(name_lbl, (ox + 10, y))
             y += 20
             stars_lbl = self._font_sm.render(
-                f"Stars: {tribe.get_stars()} (+{tribe.get_max_production(gs)})", True, (200, 200, 180)
+                f"Stars: {tribe.get_stars()} (+{tribe.get_max_production(gs)})",
+                True,
+                (200, 200, 180),
             )
             self._screen.blit(stars_lbl, (ox + 10, y))
             y += 18
@@ -305,7 +314,9 @@ class GUI:
             t_obj = tribes_list[tr.id]
             t_color = t_obj.get_type().get_color()
             status = _RESULT_LABEL.get(tr.result, "")
-            line = f"#{rank_idx+1} {t_obj.get_type().get_name()}: {tr.score}pts {status}"
+            line = (
+                f"#{rank_idx+1} {t_obj.get_type().get_name()}: {tr.score}pts {status}"
+            )
             lbl = self._font_sm.render(line, True, t_color)
             self._screen.blit(lbl, (ox + 10, y))
             y += 16
@@ -345,10 +356,12 @@ class GUI:
             pygame.draw.rect(self._screen, t_color, block, 1)
 
             status = _RESULT_LABEL.get(tribe.get_winner(), "")
-            text = (f"{tribe.get_type().get_name()}: "
-                    f"{tribe.get_score()}pts | "
-                    f"cities={tribe.get_num_cities()} | "
-                    f"stars={tribe.get_stars()} {status}")
+            text = (
+                f"{tribe.get_type().get_name()}: "
+                f"{tribe.get_score()}pts | "
+                f"cities={tribe.get_num_cities()} | "
+                f"stars={tribe.get_stars()} {status}"
+            )
             lbl = self._font_sm.render(text, True, t_color)
             self._screen.blit(lbl, (x + 4, y + 6))
             y += row_h

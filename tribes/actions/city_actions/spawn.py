@@ -1,4 +1,5 @@
 "Spawn action + command."
+
 from __future__ import annotations
 
 import logging
@@ -51,8 +52,8 @@ class Spawn(CityAction):
         city_pos = city.get_position()
         ut = self._unit_type
         new_unit = UNIT_TYPE.create_unit(
-            Vector2d(city_pos.x, city_pos.y), 0, False,
-            city.actor_id, city.tribe_id, ut)
+            Vector2d(city_pos.x, city_pos.y), 0, False, city.actor_id, city.tribe_id, ut
+        )
         gs.get_board().add_unit(city, new_unit)
         tribe = gs.get_tribe(city.tribe_id)
         tribe.subtract_stars(ut.get_cost())

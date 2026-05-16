@@ -1,4 +1,5 @@
 "Building and Temple actors, ported from Building.java and Temple.java."
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -1,11 +1,19 @@
 "Unit tests for TribeResult ordering."
+
 from tribes.game.tribe_result import TribeResult
 from tribes.types import RESULT
 
 
-def _tr(id_: int, result: RESULT = RESULT.INCOMPLETE, score: int = 100,
-        techs: int = 5, cities: int = 3, prod: int = 10,
-        wars: int = 0, stars: int = 0) -> TribeResult:
+def _tr(
+    id_: int,
+    result: RESULT = RESULT.INCOMPLETE,
+    score: int = 100,
+    techs: int = 5,
+    cities: int = 3,
+    prod: int = 10,
+    wars: int = 0,
+    stars: int = 0,
+) -> TribeResult:
     return TribeResult(id_, result, score, techs, cities, prod, wars, stars)
 
 
@@ -47,6 +55,6 @@ def test_sorting():
         _tr(1, RESULT.INCOMPLETE, score=200),
     ]
     results.sort()
-    assert results[0].id == 0   # WIN always first
-    assert results[1].id == 1   # higher score next
+    assert results[0].id == 0  # WIN always first
+    assert results[1].id == 1  # higher score next
     assert results[2].id == 2

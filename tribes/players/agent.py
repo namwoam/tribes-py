@@ -1,4 +1,5 @@
 "Abstract Agent base class, ported from Agent.java."
+
 from __future__ import annotations
 
 import logging
@@ -38,8 +39,7 @@ class Agent(ABC):
         return self.player_id
 
     @abstractmethod
-    def copy(self) -> Agent:
-        ...
+    def copy(self) -> Agent: ...
 
     # ------------------------------------------------------------------
     # Helper: collect "good" actions (no Destroy / Disband)
@@ -47,6 +47,7 @@ class Agent(ABC):
 
     def _all_good_actions(self, gs: GameState) -> list[Action]:
         from tribes.actions.action import Action as ActionBase
+
         all_actions: list[ActionBase] = []
         for act in gs.get_all_city_actions():
             if act.action_type is not ACTION.DESTROY:

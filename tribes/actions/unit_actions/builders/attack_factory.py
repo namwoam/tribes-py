@@ -1,6 +1,8 @@
 "AttackFactory."
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tribes.actors.units.unit import Unit
     from tribes.game.game_state import GameState
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 class AttackFactory:
     def compute_action_variants(self, unit: Unit, gs: GameState) -> list[Action]:
         from tribes.actions.unit_actions.attack import Attack
+
         attacks: list[Action] = []
         if not unit.can_attack():
             return attacks

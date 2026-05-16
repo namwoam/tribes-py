@@ -1,4 +1,5 @@
 "Game loop, ported from Game.java."
+
 from __future__ import annotations
 
 import logging
@@ -37,9 +38,11 @@ class Game:
     # Init
     # ------------------------------------------------------------------
 
-    def init(self, players: list[Agent], filename: str, seed: int,
-             game_mode: GAME_MODE) -> None:
+    def init(
+        self, players: list[Agent], filename: str, seed: int, game_mode: GAME_MODE
+    ) -> None:
         from tribes.game.game_state import GameState as GS
+
         self._seed = seed
         self._rnd = random.Random(seed)
         self._gs = GS(self._rnd, game_mode)
@@ -47,10 +50,17 @@ class Game:
         self._init_structures(players, len(self._gs.get_tribes()))
         self._update_observations()
 
-    def init_generated(self, players: list[Agent], level_seed: int,
-                       tribes_enum: list, seed: int, game_mode: GAME_MODE) -> None:
+    def init_generated(
+        self,
+        players: list[Agent],
+        level_seed: int,
+        tribes_enum: list,
+        seed: int,
+        game_mode: GAME_MODE,
+    ) -> None:
         """Init with a procedurally generated level."""
         from tribes.game.game_state import GameState as GS
+
         self._seed = seed
         self._rnd = random.Random(seed)
         self._gs = GS(self._rnd, game_mode)
@@ -67,7 +77,8 @@ class Game:
         if len(players) != n_tribes:
             logger.error(
                 "Number of tribes (%d) must equal number of players (%d).",
-                n_tribes, len(players)
+                n_tribes,
+                len(players),
             )
             sys.exit(-1)
 
@@ -151,6 +162,7 @@ class Game:
             if action is None and not continue_turn:
                 # Auto-end turn
                 from tribes.actions.tribe_actions.end_turn import EndTurn
+
                 action = EndTurn(self._gs.get_active_tribe_id())
 
             if gui is not None and action is not None:
@@ -199,8 +211,14 @@ class Game:
             tribe_type = tribes[tid].get_type().name
             logger.info(
                 " #%d: Tribe %s (%s): %s, %d pts; techs=%d, cities=%d, prod=%d",
-                rank, tribe_type, agent_name, tr.result.name,
-                tr.score, tr.num_techs_researched, tr.num_cities, tr.production,
+                rank,
+                tribe_type,
+                agent_name,
+                tr.result.name,
+                tr.score,
+                tr.num_techs_researched,
+                tr.num_cities,
+                tr.production,
             )
         if C.VERBOSE:
             self._print_results_stdout()
@@ -231,12 +249,10 @@ class Game:
         return self._players
 
     def get_winner_status(self) -> list[RESULT]:
-        return [self._gs.get_tribes()[i].get_winner()
-                for i in range(self._num_players)]
+        return [self._gs.get_tribes()[i].get_winner() for i in range(self._num_players)]
 
     def get_scores(self) -> list[int]:
-        return [self._gs.get_tribes()[i].get_score()
-                for i in range(self._num_players)]
+        return [self._gs.get_tribes()[i].get_score() for i in range(self._num_players)]
 
     def get_current_ranking(self) -> list[TribeResult]:
         return self._gs.get_current_ranking()

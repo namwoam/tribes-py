@@ -1,4 +1,5 @@
 "Attack action + command."
+
 from __future__ import annotations
 
 import logging
@@ -30,7 +31,11 @@ class Attack(UnitAction):
     def is_feasible(self, gs: GameState) -> bool:
         target = gs.get_actor(self._target_id)
         attacker = gs.get_actor(self.unit_id)
-        if target is None or not attacker.can_attack() or attacker.get_type() is UNIT_TYPE.MIND_BENDER:
+        if (
+            target is None
+            or not attacker.can_attack()
+            or attacker.get_type() is UNIT_TYPE.MIND_BENDER
+        ):
             return False
         return self.unit_in_range(attacker, target, gs.get_board())
 
@@ -49,30 +54,48 @@ class Attack(UnitAction):
         attack_result, defence_result = self._get_attack_results(gs)
 
         d.update_allegiance(cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id)
-        d.check_consequences(cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id)
+        d.check_consequences(
+            cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id
+        )
 
         if target.get_current_hp() <= attack_result:
-            d.update_allegiance(cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id)
-            d.check_consequences(cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id)
+            d.update_allegiance(
+                cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id
+            )
+            d.check_consequences(
+                cfg.ATTACK_REPERCUSSION, attacker.tribe_id, target.tribe_id
+            )
 
             attacker.add_kill()
             attacker_tribe.add_kill()
 
             gs.kill_unit(target)
 
-            melee_types = (UNIT_TYPE.DEFENDER, UNIT_TYPE.SWORDMAN, UNIT_TYPE.RIDER,
-                           UNIT_TYPE.WARRIOR, UNIT_TYPE.KNIGHT, UNIT_TYPE.SUPERUNIT)
+            melee_types = (
+                UNIT_TYPE.DEFENDER,
+                UNIT_TYPE.SWORDMAN,
+                UNIT_TYPE.RIDER,
+                UNIT_TYPE.WARRIOR,
+                UNIT_TYPE.KNIGHT,
+                UNIT_TYPE.SUPERUNIT,
+            )
             if attacker.get_type() in melee_types:
                 gs.get_board().try_push(
-                    attacker_tribe, attacker,
-                    attacker.get_position().x, attacker.get_position().y,
-                    target.get_position().x, target.get_position().y,
-                    gs.get_random_generator())
+                    attacker_tribe,
+                    attacker,
+                    attacker.get_position().x,
+                    attacker.get_position().y,
+                    target.get_position().x,
+                    target.get_position().y,
+                    gs.get_random_generator(),
+                )
         else:
             target.set_current_hp(target.get_current_hp() - attack_result)
 
             # Retaliation
-            distance = Vector2d.chebychev_distance(attacker.get_position(), target.get_position())
+            distance = Vector2d.chebychev_distance(
+                attacker.get_position(), target.get_position()
+            )
             if distance <= target.RANGE:
                 attacker.set_current_hp(attacker.get_current_hp() - defence_result)
                 if attacker.get_current_hp() <= 0:
@@ -88,7 +111,9 @@ class Attack(UnitAction):
         target_pos = target.get_position()
         target_tribe = gs.get_tribe(target.tribe_id)
 
-        attack_force = attacker.ATK * (attacker.get_current_hp() / attacker.get_max_hp())
+        attack_force = attacker.ATK * (
+            attacker.get_current_hp() / attacker.get_max_hp()
+        )
         defence_force = target.DEF * (target.get_current_hp() / target.get_max_hp())
         accelerator = cfg.ATTACK_MODIFIER
 
@@ -101,17 +126,30 @@ class Attack(UnitAction):
                     defence_force *= cfg.DEFENCE_IN_WALLS
                 elif target.get_type().can_fortify():
                     defence_force *= cfg.DEFENCE_BONUS
-        elif ((target_terrain is TERRAIN.MOUNTAIN
-               and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.MEDITATION))
-              or (target_terrain is not None and target_terrain.is_water()
-                  and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.AQUATISM))
-              or (target_terrain is TERRAIN.FOREST
-                  and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.ARCHERY))):
+        elif (
+            (
+                target_terrain is TERRAIN.MOUNTAIN
+                and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.MEDITATION)
+            )
+            or (
+                target_terrain is not None
+                and target_terrain.is_water()
+                and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.AQUATISM)
+            )
+            or (
+                target_terrain is TERRAIN.FOREST
+                and target_tribe.get_tech_tree().is_researched(TECHNOLOGY.ARCHERY)
+            )
+        ):
             defence_force *= cfg.DEFENCE_BONUS
 
         total_damage = attack_force + defence_force
-        attack_result = round((attack_force / total_damage) * attacker.ATK * accelerator)
-        defence_result = round((defence_force / total_damage) * target.DEF * accelerator)
+        attack_result = round(
+            (attack_force / total_damage) * attacker.ATK * accelerator
+        )
+        defence_result = round(
+            (defence_force / total_damage) * target.DEF * accelerator
+        )
         return int(attack_result), int(defence_result)
 
     def copy(self) -> Attack:

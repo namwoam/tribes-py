@@ -1,4 +1,5 @@
 "DeclareWar action + command."
+
 from __future__ import annotations
 
 import logging
@@ -30,8 +31,10 @@ class DeclareWar(TribeAction):
         d = gs.get_board().get_diplomacy()
         allegiances = d.get_allegiance_status()
         threshold = -(float(cfg.ALLEGIANCE_MAX) / 2.0)
-        return (allegiances[self.tribe_id][self._target_id] > threshold
-                and not gs.get_tribe(self.tribe_id).get_has_declared_war())
+        return (
+            allegiances[self.tribe_id][self._target_id] > threshold
+            and not gs.get_tribe(self.tribe_id).get_has_declared_war()
+        )
 
     def execute(self, gs: GameState) -> bool:
         if not self.is_feasible(gs):

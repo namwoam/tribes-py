@@ -1,6 +1,8 @@
 "ResourceGatheringFactory."
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tribes.actors.city import City
     from tribes.game.game_state import GameState
@@ -11,6 +13,7 @@ from tribes.utils.vector2d import Vector2d
 class ResourceGatheringFactory:
     def compute_action_variants(self, city: City, gs: GameState) -> list[Action]:
         from tribes.actions.city_actions.resource_gathering import ResourceGathering
+
         actions: list[Action] = []
         board = gs.get_board()
         city_id = city.actor_id

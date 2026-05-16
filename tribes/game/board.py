@@ -1,11 +1,19 @@
 "Game Board, ported from Board.java."
+
 from __future__ import annotations
 
 import logging
 import random as _random
 from typing import TYPE_CHECKING, Optional
 
-from tribes.types import TERRAIN, RESOURCE, BUILDING, TECHNOLOGY, UNIT as UNIT_TYPE, TURN_STATUS
+from tribes.types import (
+    TERRAIN,
+    RESOURCE,
+    BUILDING,
+    TECHNOLOGY,
+    UNIT as UNIT_TYPE,
+    TURN_STATUS,
+)
 from tribes.utils.vector2d import Vector2d
 from tribes import config as cfg
 from tribes.diplomacy import Diplomacy
@@ -28,8 +36,8 @@ class Board:
         self._terrains: list[list[Optional[TERRAIN]]] = []
         self._resources: list[list[Optional[RESOURCE]]] = []
         self._buildings: list[list[Optional[BUILDING]]] = []
-        self._units: list[list[int]] = []          # 0 = empty
-        self._tile_city_id: list[list[int]] = []   # -1 = no city
+        self._units: list[list[int]] = []  # 0 = empty
+        self._tile_city_id: list[list[int]] = []  # -1 = no city
         self._tribes: list[Tribe] = []
         self._capital_ids: list[int] = []
         self._game_actors: dict[int, Actor] = {}
@@ -87,8 +95,11 @@ class Board:
         cb._tile_city_id = [[-1] * n for _ in range(n)]
 
         from tribes.game.trade_network import TradeNetwork
+
         cb._trade_network = TradeNetwork(n)
-        cb._diplomacy = self._diplomacy.copy() if self._diplomacy else Diplomacy(len(self._tribes))
+        cb._diplomacy = (
+            self._diplomacy.copy() if self._diplomacy else Diplomacy(len(self._tribes))
+        )
 
         cb._capital_ids = list(self._capital_ids)
 
@@ -101,7 +112,8 @@ class Board:
                     cb.set_building_at(x, y, self._buildings[x][y])
                     cb._tile_city_id[x][y] = self._tile_city_id[x][y]
                     cb._trade_network.set_trade_network_value(
-                        x, y, self._trade_network.get_trade_network_value(x, y))
+                        x, y, self._trade_network.get_trade_network_value(x, y)
+                    )
                 else:
                     cb.set_terrain_at(x, y, TERRAIN.FOG)
 
@@ -119,9 +131,9 @@ class Board:
         for act in self._game_actors.values():
             act_id = act.actor_id
             act_tribe_id = act.tribe_id
-            actor_visible = (player_id == -1 or
-                             self._tribes[player_id].is_visible(
-                                 act.get_position().x, act.get_position().y))
+            actor_visible = player_id == -1 or self._tribes[player_id].is_visible(
+                act.get_position().x, act.get_position().y
+            )
 
             if act_tribe_id == player_id or not partial_obs or actor_visible:
                 hide = (act_tribe_id != player_id) and partial_obs
@@ -159,8 +171,9 @@ class Board:
     # Unit movement
     # ------------------------------------------------------------------
 
-    def push_unit(self, tribe: Tribe, to_push: Unit,
-                  start_x: int, start_y: int, r: _random.Random) -> bool:
+    def push_unit(
+        self, tribe: Tribe, to_push: Unit, start_x: int, start_y: int, r: _random.Random
+    ) -> bool:
         x_push = [0, -1, 0, 1, -1, -1, 1, 1]
         y_push = [1, 0, -1, 0, 1, -1, -1, 1]
         idx = 0
@@ -174,9 +187,16 @@ class Board:
         to_push.set_status(TURN_STATUS.PUSHED)
         return pushed
 
-    def try_push(self, tribe: Tribe, to_push: Unit,
-                 start_x: int, start_y: int,
-                 x: int, y: int, r: _random.Random) -> bool:
+    def try_push(
+        self,
+        tribe: Tribe,
+        to_push: Unit,
+        start_x: int,
+        start_y: int,
+        x: int,
+        y: int,
+        r: _random.Random,
+    ) -> bool:
         u = self.get_unit_at(x, y)
         if u is not None:
             return False
@@ -185,7 +205,11 @@ class Board:
         tribe_id = tribe.tribe_id
 
         if terrain is TERRAIN.MOUNTAIN:
-            if self._tribes[tribe_id].get_tech_tree().is_researched(TECHNOLOGY.CLIMBING):
+            if (
+                self._tribes[tribe_id]
+                .get_tech_tree()
+                .is_researched(TECHNOLOGY.CLIMBING)
+            ):
                 self.move_unit(to_push, start_x, start_y, x, y, r)
                 return True
             return False
@@ -210,8 +234,14 @@ class Board:
         self.remove_unit_from_city(unit, city, tribe)
 
         new_pos = Vector2d(x, y)
-        boat = UNIT_TYPE.create_unit(new_pos, unit.get_kills(), unit.is_veteran(),
-                                     unit.get_city_id(), unit.tribe_id, UNIT_TYPE.BOAT)
+        boat = UNIT_TYPE.create_unit(
+            new_pos,
+            unit.get_kills(),
+            unit.is_veteran(),
+            unit.get_city_id(),
+            unit.tribe_id,
+            UNIT_TYPE.BOAT,
+        )
         boat.set_current_hp(unit.get_current_hp())
         boat.set_max_hp(unit.get_max_hp())
         boat.set_base_land_unit(unit.get_type())
@@ -227,8 +257,14 @@ class Board:
             base_land_unit = UNIT_TYPE.WARRIOR
 
         new_pos = Vector2d(x, y)
-        new_unit = UNIT_TYPE.create_unit(new_pos, unit.get_kills(), unit.is_veteran(),
-                                         unit.get_city_id(), unit.tribe_id, base_land_unit)
+        new_unit = UNIT_TYPE.create_unit(
+            new_pos,
+            unit.get_kills(),
+            unit.is_veteran(),
+            unit.get_city_id(),
+            unit.tribe_id,
+            base_land_unit,
+        )
         new_unit.set_current_hp(unit.get_current_hp())
         new_unit.set_max_hp(unit.get_max_hp())
         self.add_unit(city, new_unit)
@@ -244,24 +280,28 @@ class Board:
         logger.error(f"get_base_land_unit: unexpected type {ut}")
         return None
 
-    def move_unit(self, unit: Unit, x0: int, y0: int,
-                  xf: int, yf: int, r: _random.Random) -> None:
+    def move_unit(
+        self, unit: Unit, x0: int, y0: int, xf: int, yf: int, r: _random.Random
+    ) -> None:
         self._units[x0][y0] = 0
         self._units[xf][yf] = unit.actor_id
         unit.set_position(xf, yf)
         t = self._tribes[unit.tribe_id]
 
         partial_obs_range = 1
-        if (self.get_terrain_at(xf, yf) is TERRAIN.MOUNTAIN
-                or unit.get_type() is UNIT_TYPE.BATTLESHIP):
+        if (
+            self.get_terrain_at(xf, yf) is TERRAIN.MOUNTAIN
+            or unit.get_type() is UNIT_TYPE.BATTLESHIP
+        ):
             partial_obs_range += 1
 
         network_update = t.clear_view(xf, yf, partial_obs_range, r, self)
         if network_update:
             self._trade_network.compute_trade_network_tribe(self, t)
 
-    def launch_explorer(self, x0: int, y0: int,
-                        tribe_id: int, rnd: _random.Random) -> None:
+    def launch_explorer(
+        self, x0: int, y0: int, tribe_id: int, rnd: _random.Random
+    ) -> None:
         current_pos = Vector2d(x0, y0)
         for _ in range(cfg.NUM_STEPS):
             j = 0
@@ -273,18 +313,27 @@ class Board:
                     moved = True
                     current_pos = Vector2d(nxt.x, nxt.y)
                     update_net = self._tribes[tribe_id].clear_view(
-                        current_pos.x, current_pos.y,
-                        cfg.EXPLORER_CLEAR_RANGE, rnd, self)
+                        current_pos.x,
+                        current_pos.y,
+                        cfg.EXPLORER_CLEAR_RANGE,
+                        rnd,
+                        self,
+                    )
                     if update_net:
                         self._trade_network.compute_trade_network_tribe(
-                            self, self._tribes[tribe_id])
+                            self, self._tribes[tribe_id]
+                        )
                 j += 1
 
     def traversable(self, x: int, y: int, tribe_id: int) -> bool:
         tt = self._tribes[tribe_id].get_tech_tree()
-        if self._terrains[x][y] is TERRAIN.MOUNTAIN and not tt.is_researched(TECHNOLOGY.CLIMBING):
+        if self._terrains[x][y] is TERRAIN.MOUNTAIN and not tt.is_researched(
+            TECHNOLOGY.CLIMBING
+        ):
             return False
-        if self._terrains[x][y] is TERRAIN.SHALLOW_WATER and not tt.is_researched(TECHNOLOGY.SAILING):
+        if self._terrains[x][y] is TERRAIN.SHALLOW_WATER and not tt.is_researched(
+            TECHNOLOGY.SAILING
+        ):
             return False
         if self._terrains[x][y] is TERRAIN.DEEP_WATER:
             return tt.is_researched(TECHNOLOGY.NAVIGATION)
@@ -329,13 +378,13 @@ class Board:
     # Capture
     # ------------------------------------------------------------------
 
-    def capture(self, game_state, capturing_tribe: Tribe,
-                x: int, y: int) -> bool:
+    def capture(self, game_state, capturing_tribe: Tribe, x: int, y: int) -> bool:
         rnd = game_state.get_random_generator()
         ter = self._terrains[x][y]
 
         if ter is TERRAIN.VILLAGE:
             from tribes.actors.city import City as CityActor
+
             new_city = CityActor(x, y, capturing_tribe.tribe_id)
             self.add_city_to_tribe(new_city, rnd)
             self.assign_city_tiles(new_city, new_city.get_bound())
@@ -357,14 +406,18 @@ class Board:
                 previous_owner.manage_loss(game_state)
 
         else:
-            logger.warning(f"capture: tribe {capturing_tribe.tribe_id} trying to capture non-city at {x},{y}")
+            logger.warning(
+                f"capture: tribe {capturing_tribe.tribe_id} trying to capture "
+                f"non-city at {x},{y}"
+            )
             return False
 
         self._trade_network.set_trade_network(self, x, y, True)
         return True
 
-    def _move_one_to_new_city(self, dest_city: City, tribe: Tribe,
-                               rnd: _random.Random) -> None:
+    def _move_one_to_new_city(
+        self, dest_city: City, tribe: Tribe, rnd: _random.Random
+    ) -> None:
         owns_capital = tribe.controls_capital()
         capital: City = self.get_actor(tribe.get_capital_id())
         cities = list(tribe.get_cities_id())
@@ -382,8 +435,9 @@ class Board:
                     self._move_last_unit_from_city(orig_city, dest_city)
                     moved = True
 
-    def _move_all_from_city(self, from_city: City, tribe: Tribe,
-                             rnd: _random.Random) -> None:
+    def _move_all_from_city(
+        self, from_city: City, tribe: Tribe, rnd: _random.Random
+    ) -> None:
         owns_capital = tribe.controls_capital()
         capital: City = self.get_actor(tribe.get_capital_id())
 
@@ -430,10 +484,15 @@ class Board:
             self._set_capital_id(c.tribe_id, c.actor_id)
         self._tribes[c.tribe_id].add_city(c.actor_id)
         self._tribes[c.tribe_id].clear_view(
-            c.get_position().x, c.get_position().y,
-            cfg.NEW_CITY_CLEAR_RANGE, r, self.copy())
+            c.get_position().x,
+            c.get_position().y,
+            cfg.NEW_CITY_CLEAR_RANGE,
+            r,
+            self.copy(),
+        )
         self._trade_network.set_trade_network(
-            self, c.get_position().x, c.get_position().y, True)
+            self, c.get_position().x, c.get_position().y, True
+        )
 
     def _set_capital_id(self, tribe_id: int, capital_id: int) -> None:
         self._tribes[tribe_id].set_capital_id(capital_id)
@@ -457,8 +516,9 @@ class Board:
         self._units[pos.x][pos.y] = 0
         self._remove_actor(u.actor_id)
 
-    def remove_unit_from_city(self, u: Unit, city: Optional[City],
-                               tribe: Tribe) -> None:
+    def remove_unit_from_city(
+        self, u: Unit, city: Optional[City], tribe: Tribe
+    ) -> None:
         if u.get_city_id() != -1 and city is not None:
             city.remove_unit(u.actor_id)
         else:
@@ -500,10 +560,12 @@ class Board:
         return self._game_actors.get(cid)  # type: ignore[return-value]
 
     def is_road(self, x: int, y: int) -> bool:
-        return (self._trade_network.get_trade_network_value(x, y)
-                and self._terrains[x][y] is not TERRAIN.SHALLOW_WATER
-                and self._terrains[x][y] is not TERRAIN.DEEP_WATER
-                and self._terrains[x][y] is not TERRAIN.CITY)
+        return (
+            self._trade_network.get_trade_network_value(x, y)
+            and self._terrains[x][y] is not TERRAIN.SHALLOW_WATER
+            and self._terrains[x][y] is not TERRAIN.DEEP_WATER
+            and self._terrains[x][y] is not TERRAIN.CITY
+        )
 
     def check_trade_network(self, x: int, y: int) -> bool:
         return self._trade_network.get_trade_network_value(x, y)

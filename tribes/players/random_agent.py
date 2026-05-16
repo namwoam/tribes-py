@@ -1,4 +1,5 @@
 "RandomAgent: picks a uniformly random available action."
+
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 "CityAction base class, ported from CityAction.java."
+
 from __future__ import annotations
 
 import logging
@@ -46,6 +47,8 @@ class CityAction(Action):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CityAction):
             return False
-        return (self.city_id == other.city_id
-                and self.action_type == other.action_type
-                and self.target_pos == other.target_pos)
+        return (
+            self.city_id == other.city_id
+            and self.action_type == other.action_type
+            and self.target_pos == other.target_pos
+        )

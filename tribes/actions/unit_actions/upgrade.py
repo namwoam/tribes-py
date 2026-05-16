@@ -1,4 +1,5 @@
 "Upgrade action + command."
+
 from __future__ import annotations
 
 import logging
@@ -24,13 +25,13 @@ class Upgrade(UnitAction):
         tt = tribe.get_tech_tree()
         stars = tribe.get_stars()
         return (
-            (unit.get_type() is UNIT_TYPE.BOAT
-             and tt.is_researched(TECHNOLOGY.SAILING)
-             and stars >= UNIT_TYPE.SHIP.get_cost())
-            or
-            (unit.get_type() is UNIT_TYPE.SHIP
-             and tt.is_researched(TECHNOLOGY.NAVIGATION)
-             and stars >= UNIT_TYPE.BATTLESHIP.get_cost())
+            unit.get_type() is UNIT_TYPE.BOAT
+            and tt.is_researched(TECHNOLOGY.SAILING)
+            and stars >= UNIT_TYPE.SHIP.get_cost()
+        ) or (
+            unit.get_type() is UNIT_TYPE.SHIP
+            and tt.is_researched(TECHNOLOGY.NAVIGATION)
+            and stars >= UNIT_TYPE.BATTLESHIP.get_cost()
         )
 
     def execute(self, gs: GameState) -> bool:
@@ -50,8 +51,13 @@ class Upgrade(UnitAction):
             return False
 
         new_unit = UNIT_TYPE.create_unit(
-            unit.get_position(), unit.get_kills(), unit.is_veteran(),
-            unit.get_city_id(), unit.tribe_id, next_type)
+            unit.get_position(),
+            unit.get_kills(),
+            unit.is_veteran(),
+            unit.get_city_id(),
+            unit.tribe_id,
+            next_type,
+        )
         new_unit.set_current_hp(unit.get_current_hp())
         new_unit.set_max_hp(unit.get_max_hp())
         # copy base land unit

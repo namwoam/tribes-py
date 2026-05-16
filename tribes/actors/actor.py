@@ -1,4 +1,5 @@
 "Abstract base class for all game actors, ported from Actor.java."
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -34,6 +35,7 @@ class Actor(ABC):
 
     def set_position(self, x: int, y: int) -> None:
         from tribes.utils.vector2d import Vector2d
+
         self.position = Vector2d(x, y)
 
     def get_position(self) -> Optional[Vector2d]:

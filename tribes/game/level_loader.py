@@ -1,4 +1,5 @@
 "LevelLoader — parses CSV level files and builds Board, ported from LevelLoader.java."
+
 from __future__ import annotations
 
 import logging
@@ -67,8 +68,8 @@ class LevelLoader:
 
                         unit_type = tribes[tribe_id].get_type().get_starting_unit()
                         unit = UNIT_TYPE.create_unit(
-                            Vector2d(i, j), 0, False,
-                            c.actor_id, tribe_id, unit_type)
+                            Vector2d(i, j), 0, False, c.actor_id, tribe_id, unit_type
+                        )
                         board.add_unit(c, unit)
                         tribes[tribe_id].add_score(unit_type.get_points())
 

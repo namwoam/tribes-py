@@ -1,4 +1,5 @@
 "Battleship unit, ported from Battleship.java."
+
 from __future__ import annotations
 from typing import Optional
 from tribes.actors.units.unit import Unit
@@ -8,12 +9,21 @@ from tribes import config as cfg
 
 
 class Battleship(Unit):
-    def __init__(self, pos: Vector2d, kills: int, is_veteran: bool,
-                 city_id: int, tribe_id: int) -> None:
+    def __init__(
+        self, pos: Vector2d, kills: int, is_veteran: bool, city_id: int, tribe_id: int
+    ) -> None:
         super().__init__(
-            cfg.BATTLESHIP_ATTACK, cfg.BATTLESHIP_DEFENCE, cfg.BATTLESHIP_MOVEMENT,
-            -1, cfg.BATTLESHIP_RANGE, cfg.BATTLESHIP_COST,
-            pos, kills, is_veteran, city_id, tribe_id,
+            cfg.BATTLESHIP_ATTACK,
+            cfg.BATTLESHIP_DEFENCE,
+            cfg.BATTLESHIP_MOVEMENT,
+            -1,
+            cfg.BATTLESHIP_RANGE,
+            cfg.BATTLESHIP_COST,
+            pos,
+            kills,
+            is_veteran,
+            city_id,
+            tribe_id,
         )
         self._base_land_unit: Optional[UNIT_TYPE] = None
 
@@ -27,8 +37,13 @@ class Battleship(Unit):
         return UNIT_TYPE.BATTLESHIP
 
     def copy(self, hide_info: bool = False) -> Battleship:
-        c = Battleship(self.position, self.get_kills(), self.is_veteran(),
-                       self.get_city_id(), self.tribe_id)
+        c = Battleship(
+            self.position,
+            self.get_kills(),
+            self.is_veteran(),
+            self.get_city_id(),
+            self.tribe_id,
+        )
         c.set_current_hp(self.get_current_hp())
         c.set_max_hp(self.get_max_hp())
         c.set_actor_id(self.get_actor_id())

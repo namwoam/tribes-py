@@ -1,4 +1,5 @@
 "Unit tests for types.py enums."
+
 from tribes.types import ACTION, GAME_MODE, RESULT, TERRAIN, TRIBE, TECHNOLOGY, UNIT
 
 
@@ -6,7 +7,7 @@ def test_action_enum_all_unique():
     """No two ACTION members should be aliases (same identity) of each other."""
     members = list(ACTION)
     for i, a in enumerate(members):
-        for b in members[i + 1:]:
+        for b in members[i + 1 :]:
             assert a is not b, f"{a.name} and {b.name} are aliases"
 
 
@@ -30,16 +31,17 @@ def test_action_tech_requirement():
 
 def test_game_mode_max_turns():
     from tribes import constants as C
+
     assert GAME_MODE.CAPITALS.get_max_turns() == C.MAX_TURNS_CAPITALS
     assert GAME_MODE.SCORE.get_max_turns() == C.MAX_TURNS
 
 
 def test_terrain_chars():
-    assert TERRAIN.get_type('.') is TERRAIN.PLAIN
-    assert TERRAIN.get_type('f') is TERRAIN.FOREST
-    assert TERRAIN.get_type('m') is TERRAIN.MOUNTAIN
-    assert TERRAIN.get_type('c') is TERRAIN.CITY
-    assert TERRAIN.get_type('X') is None
+    assert TERRAIN.get_type(".") is TERRAIN.PLAIN
+    assert TERRAIN.get_type("f") is TERRAIN.FOREST
+    assert TERRAIN.get_type("m") is TERRAIN.MOUNTAIN
+    assert TERRAIN.get_type("c") is TERRAIN.CITY
+    assert TERRAIN.get_type("X") is None
 
 
 def test_tribe_colors():

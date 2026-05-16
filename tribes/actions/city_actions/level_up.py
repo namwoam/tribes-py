@@ -1,4 +1,5 @@
 "LevelUp action + command."
+
 from __future__ import annotations
 
 import logging
@@ -50,8 +51,9 @@ class LevelUp(CityAction):
         if bonus is CITY_LEVEL_UP.WORKSHOP:
             city.add_production(cfg.CITY_LEVEL_UP_WORKSHOP_PROD)
         elif bonus is CITY_LEVEL_UP.EXPLORER:
-            gs.get_board().launch_explorer(city_pos.x, city_pos.y,
-                                           city.tribe_id, gs.get_random_generator())
+            gs.get_board().launch_explorer(
+                city_pos.x, city_pos.y, city.tribe_id, gs.get_random_generator()
+            )
         elif bonus is CITY_LEVEL_UP.CITY_WALL:
             city.set_walls(True)
         elif bonus is CITY_LEVEL_UP.RESOURCES:
@@ -68,7 +70,8 @@ class LevelUp(CityAction):
             if unit_in_city is not None:
                 gs.push_unit(unit_in_city, city_pos.x, city_pos.y)
             super_unit = UNIT_TYPE.create_unit(
-                city_pos, 0, False, city.actor_id, city.tribe_id, UNIT_TYPE.SUPERUNIT)
+                city_pos, 0, False, city.actor_id, city.tribe_id, UNIT_TYPE.SUPERUNIT
+            )
             gs.get_board().add_unit(city, super_unit)
 
         return True

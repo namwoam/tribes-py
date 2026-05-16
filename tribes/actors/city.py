@@ -1,4 +1,5 @@
 "City actor, ported from City.java."
+
 from __future__ import annotations
 
 import logging
@@ -61,53 +62,83 @@ class City(Actor):
     # ------------------------------------------------------------------
 
     def add_building(self, game_state, building: Building) -> None:
-        self._update_building_effects(game_state, building, negative=False, only_matching=False)
+        self._update_building_effects(
+            game_state, building, negative=False, only_matching=False
+        )
         self._buildings.append(building)
 
     def remove_building(self, game_state, building: Building) -> None:
-        self._update_building_effects(game_state, building, negative=True, only_matching=False)
+        self._update_building_effects(
+            game_state, building, negative=True, only_matching=False
+        )
         self._buildings.remove(building)
 
-    def _update_building_effects(self, game_state, building: Building,
-                                  negative: bool, only_matching: bool) -> None:
+    def _update_building_effects(
+        self, game_state, building: Building, negative: bool, only_matching: bool
+    ) -> None:
         multiplier = -1 if negative else 1
         tribe: Tribe = game_state.get_tribe(self.tribe_id)
 
         btype = building.type
 
         if btype in (
-            BUILDING_TYPE.FARM, BUILDING_TYPE.LUMBER_HUT, BUILDING_TYPE.MINE,
-            BUILDING_TYPE.WINDMILL, BUILDING_TYPE.SAWMILL, BUILDING_TYPE.FORGE,
+            BUILDING_TYPE.FARM,
+            BUILDING_TYPE.LUMBER_HUT,
+            BUILDING_TYPE.MINE,
+            BUILDING_TYPE.WINDMILL,
+            BUILDING_TYPE.SAWMILL,
+            BUILDING_TYPE.FORGE,
         ):
-            self._apply_bonus(game_state, building, is_population=True,
-                              only_matching=only_matching, multiplier=multiplier)
+            self._apply_bonus(
+                game_state,
+                building,
+                is_population=True,
+                only_matching=only_matching,
+                multiplier=multiplier,
+            )
 
         elif btype is BUILDING_TYPE.PORT:
             if not only_matching:
                 self.add_population(tribe, btype.get_bonus() * multiplier)
-            self._apply_bonus(game_state, building, is_population=False,
-                              only_matching=only_matching, multiplier=multiplier)
+            self._apply_bonus(
+                game_state,
+                building,
+                is_population=False,
+                only_matching=only_matching,
+                multiplier=multiplier,
+            )
 
         elif btype is BUILDING_TYPE.CUSTOMS_HOUSE:
-            self._apply_bonus(game_state, building, is_population=False,
-                              only_matching=only_matching, multiplier=multiplier)
+            self._apply_bonus(
+                game_state,
+                building,
+                is_population=False,
+                only_matching=only_matching,
+                multiplier=multiplier,
+            )
 
         elif btype in (
-            BUILDING_TYPE.TEMPLE, BUILDING_TYPE.WATER_TEMPLE,
-            BUILDING_TYPE.MOUNTAIN_TEMPLE, BUILDING_TYPE.FOREST_TEMPLE,
+            BUILDING_TYPE.TEMPLE,
+            BUILDING_TYPE.WATER_TEMPLE,
+            BUILDING_TYPE.MOUNTAIN_TEMPLE,
+            BUILDING_TYPE.FOREST_TEMPLE,
         ):
             if not only_matching:
                 self.add_population(tribe, btype.get_bonus() * multiplier)
             score_diff = (
-                building.get_points() if (negative and isinstance(building, Temple))
+                building.get_points()
+                if (negative and isinstance(building, Temple))
                 else cfg.TEMPLE_POINTS[0]
             )
             tribe.add_score(score_diff)
 
         elif btype in (
-            BUILDING_TYPE.ALTAR_OF_PEACE, BUILDING_TYPE.EMPERORS_TOMB,
-            BUILDING_TYPE.EYE_OF_GOD, BUILDING_TYPE.GATE_OF_POWER,
-            BUILDING_TYPE.PARK_OF_FORTUNE, BUILDING_TYPE.TOWER_OF_WISDOM,
+            BUILDING_TYPE.ALTAR_OF_PEACE,
+            BUILDING_TYPE.EMPERORS_TOMB,
+            BUILDING_TYPE.EYE_OF_GOD,
+            BUILDING_TYPE.GATE_OF_POWER,
+            BUILDING_TYPE.PARK_OF_FORTUNE,
+            BUILDING_TYPE.TOWER_OF_WISDOM,
             BUILDING_TYPE.GRAND_BAZAR,
         ):
             if not only_matching:
@@ -117,8 +148,14 @@ class City(Actor):
     # Kept accessible as package method (called by Tribe)
     update_building_effects = _update_building_effects
 
-    def _apply_bonus(self, game_state, building: Building, is_population: bool,
-                     only_matching: bool, multiplier: int) -> None:
+    def _apply_bonus(
+        self,
+        game_state,
+        building: Building,
+        is_population: bool,
+        only_matching: bool,
+        multiplier: int,
+    ) -> None:
         is_base = building.type.is_base()
         city_to_add_to: City = self
         board = game_state.get_board()
@@ -143,7 +180,8 @@ class City(Actor):
 
                 if existing_building is not None:
                     bonus_to_add = (
-                        existing_building.get_bonus() if is_base
+                        existing_building.get_bonus()
+                        if is_base
                         else building.get_bonus()
                     )
                     if is_population:

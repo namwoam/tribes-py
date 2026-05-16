@@ -1,4 +1,5 @@
 "Abstract Unit base class, ported from Unit.java."
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -20,10 +21,20 @@ _FN = TURN_STATUS.FINISHED
 class Unit(Actor):
     """Abstract base for all unit types."""
 
-    def __init__(self, atk: int, df: int, mov: int, max_hp: int,
-                 unit_range: int, cost: int,
-                 pos: Vector2d, kills: int, is_veteran: bool,
-                 city_id: int, tribe_id: int) -> None:
+    def __init__(
+        self,
+        atk: int,
+        df: int,
+        mov: int,
+        max_hp: int,
+        unit_range: int,
+        cost: int,
+        pos: Vector2d,
+        kills: int,
+        is_veteran: bool,
+        city_id: int,
+        tribe_id: int,
+    ) -> None:
         super().__init__()
         self.ATK: int = atk
         self.DEF: int = df
@@ -91,8 +102,7 @@ class Unit(Actor):
     # ------------------------------------------------------------------
 
     @abstractmethod
-    def get_type(self) -> UNIT_TYPE:
-        ...
+    def get_type(self) -> UNIT_TYPE: ...
 
     # ------------------------------------------------------------------
     # Status transitions
@@ -114,11 +124,19 @@ class Unit(Actor):
         utype = self.get_type()
 
         if utype in (UNIT_TYPE.MIND_BENDER, UNIT_TYPE.CATAPULT, UNIT_TYPE.DEFENDER):
-            return (transition is _MV and status is _FS) or (transition is _AT and status is _FS)
+            return (transition is _MV and status is _FS) or (
+                transition is _AT and status is _FS
+            )
 
-        if utype in (UNIT_TYPE.ARCHER, UNIT_TYPE.BATTLESHIP, UNIT_TYPE.BOAT,
-                     UNIT_TYPE.SHIP, UNIT_TYPE.WARRIOR, UNIT_TYPE.SWORDMAN,
-                     UNIT_TYPE.SUPERUNIT):
+        if utype in (
+            UNIT_TYPE.ARCHER,
+            UNIT_TYPE.BATTLESHIP,
+            UNIT_TYPE.BOAT,
+            UNIT_TYPE.SHIP,
+            UNIT_TYPE.WARRIOR,
+            UNIT_TYPE.SWORDMAN,
+            UNIT_TYPE.SUPERUNIT,
+        ):
             if transition is _MV and status is _FS:
                 return True
             if transition is _AT and status is _FS:
@@ -163,12 +181,22 @@ class Unit(Actor):
 
         utype = self.get_type()
 
-        if utype in (UNIT_TYPE.MIND_BENDER, UNIT_TYPE.CATAPULT,
-                     UNIT_TYPE.DEFENDER, UNIT_TYPE.SUPERUNIT):
+        if utype in (
+            UNIT_TYPE.MIND_BENDER,
+            UNIT_TYPE.CATAPULT,
+            UNIT_TYPE.DEFENDER,
+            UNIT_TYPE.SUPERUNIT,
+        ):
             self._status = _FN
 
-        elif utype in (UNIT_TYPE.ARCHER, UNIT_TYPE.BATTLESHIP, UNIT_TYPE.BOAT,
-                       UNIT_TYPE.SHIP, UNIT_TYPE.WARRIOR, UNIT_TYPE.SWORDMAN):
+        elif utype in (
+            UNIT_TYPE.ARCHER,
+            UNIT_TYPE.BATTLESHIP,
+            UNIT_TYPE.BOAT,
+            UNIT_TYPE.SHIP,
+            UNIT_TYPE.WARRIOR,
+            UNIT_TYPE.SWORDMAN,
+        ):
             s = self._status
             if new_status is _MV and s is _FS:
                 self._status = _MV
@@ -223,5 +251,4 @@ class Unit(Actor):
         return self
 
     @abstractmethod
-    def copy(self, hide_info: bool) -> Unit:
-        ...
+    def copy(self, hide_info: bool) -> Unit: ...

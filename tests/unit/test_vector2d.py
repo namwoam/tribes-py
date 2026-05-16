@@ -1,4 +1,5 @@
 "Unit tests for Vector2d utility."
+
 import pytest
 from tribes.utils.vector2d import Vector2d
 

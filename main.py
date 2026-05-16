@@ -11,6 +11,7 @@ Run with GUI:
 Run a tournament via JSON config:
     python main.py --tournament config.json
 """
+
 from __future__ import annotations
 
 import json
@@ -36,6 +37,7 @@ logger = logging.getLogger(__name__)
 # Quick-start helpers
 # ---------------------------------------------------------------------------
 
+
 def _parse_tribe(name: str) -> TRIBE_TYPE:
     mapping = {
         "xin xi": TRIBE_TYPE.XIN_XI,
@@ -59,8 +61,13 @@ def _parse_tribe(name: str) -> TRIBE_TYPE:
     return mapping[key]
 
 
-def run_single_game(level_file: str, player_types: list[str],
-                    seed: int, game_mode: GAME_MODE, with_gui: bool) -> None:
+def run_single_game(
+    level_file: str,
+    player_types: list[str],
+    seed: int,
+    game_mode: GAME_MODE,
+    with_gui: bool,
+) -> None:
     players = [_make_agent(pt, seed) for pt in player_types]
     game = Game()
     game.init(players, level_file, seed, game_mode)
@@ -69,6 +76,7 @@ def run_single_game(level_file: str, player_types: list[str],
     if with_gui:
         try:
             from tribes.gui.gui import GUI
+
             gui = GUI(game)
         except ImportError:
             logger.warning("pygame not available – running headless.")
@@ -80,9 +88,11 @@ def run_tournament(config_path: str) -> None:
     with open(config_path) as f:
         cfg = json.load(f)
 
-    game_mode = (GAME_MODE.CAPITALS
-                 if cfg.get("Game Mode", "Capitals").lower() == "capitals"
-                 else GAME_MODE.SCORE)
+    game_mode = (
+        GAME_MODE.CAPITALS
+        if cfg.get("Game Mode", "Capitals").lower() == "capitals"
+        else GAME_MODE.SCORE
+    )
     repetitions = cfg.get("Repetitions", 1)
     shift_tribes = cfg.get("Shift Tribes", True)
     C.VERBOSE = cfg.get("Verbose", True)
@@ -106,6 +116,7 @@ def run_tournament(config_path: str) -> None:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
 
 @click.command(
     context_settings={
@@ -193,7 +204,9 @@ def main(
             level = level_candidates[0]
             logger.info("Using level file: %s", level)
 
-        game_mode = GAME_MODE.CAPITALS if mode.lower() == "capitals" else GAME_MODE.SCORE
+        game_mode = (
+            GAME_MODE.CAPITALS if mode.lower() == "capitals" else GAME_MODE.SCORE
+        )
         run_single_game(level, list(player_types), seed, game_mode, gui)
 
 

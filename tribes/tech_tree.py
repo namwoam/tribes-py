@@ -1,4 +1,5 @@
 "Technology tree ported from TechnologyTree.java."
+
 from __future__ import annotations
 
 import random as _random
@@ -49,9 +50,15 @@ class TechnologyTree:
         if self.is_researchable(target):
             self.researched[_TECH_ORDINAL[target]] = True
             leaf_techs = {
-                TECHNOLOGY.SHIELDS, TECHNOLOGY.AQUATISM, TECHNOLOGY.CHIVALRY,
-                TECHNOLOGY.CONSTRUCTION, TECHNOLOGY.MATHEMATICS, TECHNOLOGY.NAVIGATION,
-                TECHNOLOGY.SMITHERY, TECHNOLOGY.SPIRITUALISM, TECHNOLOGY.TRADE,
+                TECHNOLOGY.SHIELDS,
+                TECHNOLOGY.AQUATISM,
+                TECHNOLOGY.CHIVALRY,
+                TECHNOLOGY.CONSTRUCTION,
+                TECHNOLOGY.MATHEMATICS,
+                TECHNOLOGY.NAVIGATION,
+                TECHNOLOGY.SMITHERY,
+                TECHNOLOGY.SPIRITUALISM,
+                TECHNOLOGY.TRADE,
                 TECHNOLOGY.PHILOSOPHY,
             }
             if target in leaf_techs:

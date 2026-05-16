@@ -1,4 +1,5 @@
 "2-D integer vector ported from Vector2d.java."
+
 from __future__ import annotations
 
 import math
@@ -113,7 +114,9 @@ class Vector2d:
     def dist(self, v_or_x, y: Optional[int] = None) -> float:
         if isinstance(v_or_x, Vector2d):
             return math.sqrt(self.sq_dist(v_or_x))
-        return math.sqrt(Vector2d.sqr(self.x - v_or_x) + Vector2d.sqr(self.y - y))  # type: ignore[arg-type]
+        return math.sqrt(
+            Vector2d.sqr(self.x - v_or_x) + Vector2d.sqr(self.y - y)
+        )  # type: ignore[arg-type]
 
     def custom_dist(self, v_or_x, y: Optional[int] = None) -> float:
         if isinstance(v_or_x, Vector2d):

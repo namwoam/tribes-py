@@ -1,4 +1,5 @@
 "Build action + command, ported from Build.java + BuildCommand.java."
+
 from __future__ import annotations
 
 import logging
@@ -32,13 +33,31 @@ class Build(CityAction):
         bt = self._building_type
         if bt is None:
             return False
-        non_unique = (BUILDING.PORT, BUILDING.FARM, BUILDING.MINE, BUILDING.LUMBER_HUT,
-                      BUILDING.TEMPLE, BUILDING.WATER_TEMPLE, BUILDING.MOUNTAIN_TEMPLE,
-                      BUILDING.FOREST_TEMPLE)
-        unique = (BUILDING.SAWMILL, BUILDING.CUSTOMS_HOUSE, BUILDING.WINDMILL, BUILDING.FORGE)
-        monuments = (BUILDING.ALTAR_OF_PEACE, BUILDING.EMPERORS_TOMB, BUILDING.EYE_OF_GOD,
-                     BUILDING.GATE_OF_POWER, BUILDING.PARK_OF_FORTUNE,
-                     BUILDING.TOWER_OF_WISDOM, BUILDING.GRAND_BAZAR)
+        non_unique = (
+            BUILDING.PORT,
+            BUILDING.FARM,
+            BUILDING.MINE,
+            BUILDING.LUMBER_HUT,
+            BUILDING.TEMPLE,
+            BUILDING.WATER_TEMPLE,
+            BUILDING.MOUNTAIN_TEMPLE,
+            BUILDING.FOREST_TEMPLE,
+        )
+        unique = (
+            BUILDING.SAWMILL,
+            BUILDING.CUSTOMS_HOUSE,
+            BUILDING.WINDMILL,
+            BUILDING.FORGE,
+        )
+        monuments = (
+            BUILDING.ALTAR_OF_PEACE,
+            BUILDING.EMPERORS_TOMB,
+            BUILDING.EYE_OF_GOD,
+            BUILDING.GATE_OF_POWER,
+            BUILDING.PARK_OF_FORTUNE,
+            BUILDING.TOWER_OF_WISDOM,
+            BUILDING.GRAND_BAZAR,
+        )
         if bt in non_unique:
             return self._is_buildable(gs, bt.get_cost(), False)
         if bt in unique:
@@ -102,6 +121,7 @@ class Build(CityAction):
         board.set_resource_at(tp.x, tp.y, None)
 
         from tribes.actors.building import Building, Temple
+
         if bt.is_temple():
             city.add_building(gs, Temple(tp.x, tp.y, bt, self.city_id))
         else:
@@ -124,7 +144,9 @@ class Build(CityAction):
         return b
 
     def __str__(self) -> str:
-        return f"BUILD by city {self.city_id} at {self.target_pos}: {self._building_type}"
+        return (
+            f"BUILD by city {self.city_id} at {self.target_pos}: {self._building_type}"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Build):

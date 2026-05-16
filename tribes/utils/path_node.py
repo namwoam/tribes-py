@@ -1,4 +1,5 @@
 "PathNode for A*/Dijkstra pathfinding, ported from PathNode.java."
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
@@ -12,11 +13,18 @@ MAX_CAPACITY = 10000
 class PathNode:
     """A node used by the Pathfinder."""
 
-    __slots__ = ("_position", "_parent", "_total_cost", "_estimated_cost",
-                 "_visited", "_id")
+    __slots__ = (
+        "_position",
+        "_parent",
+        "_total_cost",
+        "_estimated_cost",
+        "_visited",
+        "_id",
+    )
 
     def __init__(self, position: Vector2d, total_cost: float = 0.0) -> None:
         from tribes.utils.vector2d import Vector2d as _V
+
         self._position: Vector2d = _V(position.x, position.y)
         self._parent: Optional[PathNode] = None
         self._total_cost: float = total_cost
@@ -69,7 +77,9 @@ class PathNode:
     # ------------------------------------------------------------------
 
     def __lt__(self, other: PathNode) -> bool:
-        return (self._total_cost + self._estimated_cost) < (other._total_cost + other._estimated_cost)
+        return (self._total_cost + self._estimated_cost) < (
+            other._total_cost + other._estimated_cost
+        )
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, PathNode):

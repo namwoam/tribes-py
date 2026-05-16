@@ -1,4 +1,5 @@
 "Move action + command."
+
 from __future__ import annotations
 
 import logging
@@ -32,9 +33,13 @@ class Move(UnitAction):
         if unit is None or self._destination is None:
             return False
         from tribes.actions.unit_actions.step_move import StepMove
+
         tp = Pathfinder(unit.get_position(), StepMove(gs, unit))
-        if unit.can_move() and gs.get_board().get_unit_at(
-                self._destination.x, self._destination.y) is None:
+        if (
+            unit.can_move()
+            and gs.get_board().get_unit_at(self._destination.x, self._destination.y)
+            is None
+        ):
             path = tp.find_path_to(self._destination)
             return path is not None
         return False
@@ -48,8 +53,14 @@ class Move(UnitAction):
         tribe = gs.get_tribe(unit.tribe_id)
         dest_terrain = board.get_terrain_at(dest.x, dest.y)
 
-        board.move_unit(unit, unit.get_position().x, unit.get_position().y,
-                        dest.x, dest.y, gs.get_random_generator())
+        board.move_unit(
+            unit,
+            unit.get_position().x,
+            unit.get_position().y,
+            dest.x,
+            dest.y,
+            gs.get_random_generator(),
+        )
 
         if unit.get_type().is_water_unit():
             if dest_terrain not in (TERRAIN.SHALLOW_WATER, TERRAIN.DEEP_WATER):

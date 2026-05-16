@@ -1,4 +1,5 @@
 "Diplomacy system ported from Diplomacy.java."
+
 from __future__ import annotations
 
 import logging
@@ -12,9 +13,7 @@ class Diplomacy:
     """Tracks allegiance values between all tribes."""
 
     def __init__(self, size: int) -> None:
-        self._allegiance_status: list[list[int]] = [
-            [0] * size for _ in range(size)
-        ]
+        self._allegiance_status: list[list[int]] = [[0] * size for _ in range(size)]
 
     # ------------------------------------------------------------------
 
@@ -24,20 +23,21 @@ class Diplomacy:
     def set_allegiance_status(self, x: int, y: int, val: int) -> None:
         self._allegiance_status[x][y] = val
 
-    def update_allegiance(self, value: int, init_tribe_id: int,
-                          target_tribe_id: int) -> None:
+    def update_allegiance(
+        self, value: int, init_tribe_id: int, target_tribe_id: int
+    ) -> None:
         current = self._allegiance_status[init_tribe_id][target_tribe_id]
         if current + value < -ALLEGIANCE_MAX or current + value > ALLEGIANCE_MAX:
             value = (1 if value > 0 else -1) * (ALLEGIANCE_MAX - abs(current))
         self._allegiance_status[init_tribe_id][target_tribe_id] += value
         self._allegiance_status[target_tribe_id][init_tribe_id] += value
 
-    def check_consequences(self, value: int, init_tribe_id: int,
-                           target_tribe_id: int) -> None:
+    def check_consequences(
+        self, value: int, init_tribe_id: int, target_tribe_id: int
+    ) -> None:
         value = value // -2
         for i in range(len(self._allegiance_status)):
-            if (self._allegiance_status[i][target_tribe_id] < 0
-                    and i != init_tribe_id):
+            if self._allegiance_status[i][target_tribe_id] < 0 and i != init_tribe_id:
                 self.update_allegiance(value, i, init_tribe_id)
 
     def copy(self) -> Diplomacy:

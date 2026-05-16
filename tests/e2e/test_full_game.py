@@ -1,4 +1,5 @@
 "End-to-end tests: full game runs with different agent combinations."
+
 from tribes.types import GAME_MODE, RESULT
 from tribes.game.game import Game
 from tribes.players.do_nothing_agent import DoNothingAgent
@@ -40,8 +41,10 @@ def test_random_game_completes():
 
 def test_mixed_agents_game_completes():
     players = [
-        SimpleAgent(1), RandomAgent(2),
-        DoNothingAgent(3), SimpleAgent(4),
+        SimpleAgent(1),
+        RandomAgent(2),
+        DoNothingAgent(3),
+        SimpleAgent(4),
     ]
     game = _run_game(players)
     ranking = game.get_current_ranking()

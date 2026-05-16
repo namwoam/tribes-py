@@ -1,4 +1,5 @@
 "HealOthers action + command."
+
 from __future__ import annotations
 
 import logging
@@ -33,14 +34,18 @@ class HealOthers(UnitAction):
 
     def _can_be_healed(self, healer: Unit, target: Unit) -> bool:
         if target is not None and target.tribe_id == healer.tribe_id:
-            return (target.get_current_hp() < target.get_max_hp()
-                    and target.tribe_id == healer.tribe_id)
+            return (
+                target.get_current_hp() < target.get_max_hp()
+                and target.tribe_id == healer.tribe_id
+            )
         return False
 
     def get_targets(self, gs: GameState) -> list[Unit]:
         targets = []
         unit = gs.get_actor(self.unit_id)
-        for tile in unit.get_position().neighborhood(unit.RANGE, 0, gs.get_board().get_size()):
+        for tile in unit.get_position().neighborhood(
+            unit.RANGE, 0, gs.get_board().get_size()
+        ):
             u = gs.get_board().get_unit_at(tile.x, tile.y)
             if self._can_be_healed(unit, u):
                 targets.append(u)
@@ -53,7 +58,8 @@ class HealOthers(UnitAction):
         targets = self.get_targets(gs)
         for target in targets:
             target.set_current_hp(
-                min(target.get_current_hp() + cfg.MINDBENDER_HEAL, target.get_max_hp()))
+                min(target.get_current_hp() + cfg.MINDBENDER_HEAL, target.get_max_hp())
+            )
         unit.transition_to_status(TURN_STATUS.ATTACKED)
         return True
 

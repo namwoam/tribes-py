@@ -1,4 +1,5 @@
 """CLI integration tests for the main entry point."""
+
 from click.testing import CliRunner
 
 from tribes.types import GAME_MODE
@@ -17,11 +18,16 @@ def test_cli_runs_single_game_with_click_player_options(monkeypatch):
     result = CliRunner().invoke(
         main.main,
         [
-            "--level", "levels/sample_level.csv",
-            "--players", "random",
-            "--players", "simple",
-            "--mode", "score",
-            "--seed", "42",
+            "--level",
+            "levels/sample_level.csv",
+            "--players",
+            "random",
+            "--players",
+            "simple",
+            "--mode",
+            "score",
+            "--seed",
+            "42",
         ],
     )
 
@@ -48,10 +54,13 @@ def test_cli_keeps_legacy_players_argument_form(monkeypatch):
     result = CliRunner().invoke(
         main.main,
         [
-            "--level", "levels/sample_level.csv",
-            "--players", "random",
+            "--level",
+            "levels/sample_level.csv",
+            "--players",
+            "random",
             "simple",
-            "--seed", "42",
+            "--seed",
+            "42",
         ],
     )
 

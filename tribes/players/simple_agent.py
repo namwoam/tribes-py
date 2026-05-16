@@ -1,4 +1,5 @@
 "SimpleAgent: heuristic-scored action selection, ported from SimpleAgent.java."
+
 from __future__ import annotations
 
 import logging
@@ -7,7 +8,14 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from tribes.players.agent import Agent
-from tribes.types import ACTION, TECHNOLOGY, TERRAIN, BUILDING as BUILDING_TYPE, UNIT as UNIT_TYPE, CITY_LEVEL_UP
+from tribes.types import (
+    ACTION,
+    TECHNOLOGY,
+    TERRAIN,
+    BUILDING as BUILDING_TYPE,
+    UNIT as UNIT_TYPE,
+    CITY_LEVEL_UP,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,8 +136,12 @@ class SimpleAgent(Agent):
         return -1
 
     def _eval_level_up(self, a: Action) -> int:
-        good = {CITY_LEVEL_UP.BORDER_GROWTH, CITY_LEVEL_UP.WORKSHOP,
-                CITY_LEVEL_UP.RESOURCES, CITY_LEVEL_UP.SUPERUNIT}
+        good = {
+            CITY_LEVEL_UP.BORDER_GROWTH,
+            CITY_LEVEL_UP.WORKSHOP,
+            CITY_LEVEL_UP.RESOURCES,
+            CITY_LEVEL_UP.SUPERUNIT,
+        }
         if a.get_bonus() in good:
             return 5
         return 0
@@ -186,11 +198,24 @@ class SimpleAgent(Agent):
 
     def _eval_research(self, a: Action, gs: GameState, tribe: Tribe) -> int:
         tech: TECHNOLOGY = a.get_tech()
-        tier1_prio = {TECHNOLOGY.ORGANIZATION, TECHNOLOGY.CLIMBING, TECHNOLOGY.MINING,
-                      TECHNOLOGY.FISHING, TECHNOLOGY.HUNTING, TECHNOLOGY.WHALING}
-        tier2_prio = {TECHNOLOGY.FARMING, TECHNOLOGY.AQUATISM, TECHNOLOGY.RIDING,
-                      TECHNOLOGY.FORESTRY, TECHNOLOGY.ARCHERY, TECHNOLOGY.SAILING,
-                      TECHNOLOGY.SHIELDS, TECHNOLOGY.CHIVALRY}
+        tier1_prio = {
+            TECHNOLOGY.ORGANIZATION,
+            TECHNOLOGY.CLIMBING,
+            TECHNOLOGY.MINING,
+            TECHNOLOGY.FISHING,
+            TECHNOLOGY.HUNTING,
+            TECHNOLOGY.WHALING,
+        }
+        tier2_prio = {
+            TECHNOLOGY.FARMING,
+            TECHNOLOGY.AQUATISM,
+            TECHNOLOGY.RIDING,
+            TECHNOLOGY.FORESTRY,
+            TECHNOLOGY.ARCHERY,
+            TECHNOLOGY.SAILING,
+            TECHNOLOGY.SHIELDS,
+            TECHNOLOGY.CHIVALRY,
+        }
         if tech in tier1_prio:
             return 5
         if tech in tier2_prio:
@@ -220,8 +245,7 @@ class SimpleAgent(Agent):
         if city is None or tribe.get_stars() <= 5:
             return 0
         score = 1
-        n_farms = sum(1 for b in city.get_buildings()
-                      if b.type is BUILDING_TYPE.FARM)
+        n_farms = sum(1 for b in city.get_buildings() if b.type is BUILDING_TYPE.FARM)
         if n_farms < 2:
             score += n_farms
         return min(5, score)
@@ -230,13 +254,27 @@ class SimpleAgent(Agent):
         if tribe.get_stars() < 8:
             return 0
         b_type: BUILDING_TYPE = a.get_building_type()
-        monuments = {BUILDING_TYPE.GRAND_BAZAR, BUILDING_TYPE.EMPERORS_TOMB,
-                     BUILDING_TYPE.GATE_OF_POWER, BUILDING_TYPE.EYE_OF_GOD,
-                     BUILDING_TYPE.PARK_OF_FORTUNE, BUILDING_TYPE.TOWER_OF_WISDOM,
-                     BUILDING_TYPE.ALTAR_OF_PEACE}
-        temples = {BUILDING_TYPE.TEMPLE, BUILDING_TYPE.WATER_TEMPLE, BUILDING_TYPE.MOUNTAIN_TEMPLE}
-        mid_tier = {BUILDING_TYPE.FARM, BUILDING_TYPE.MINE, BUILDING_TYPE.FORGE,
-                    BUILDING_TYPE.WINDMILL, BUILDING_TYPE.CUSTOMS_HOUSE}
+        monuments = {
+            BUILDING_TYPE.GRAND_BAZAR,
+            BUILDING_TYPE.EMPERORS_TOMB,
+            BUILDING_TYPE.GATE_OF_POWER,
+            BUILDING_TYPE.EYE_OF_GOD,
+            BUILDING_TYPE.PARK_OF_FORTUNE,
+            BUILDING_TYPE.TOWER_OF_WISDOM,
+            BUILDING_TYPE.ALTAR_OF_PEACE,
+        }
+        temples = {
+            BUILDING_TYPE.TEMPLE,
+            BUILDING_TYPE.WATER_TEMPLE,
+            BUILDING_TYPE.MOUNTAIN_TEMPLE,
+        }
+        mid_tier = {
+            BUILDING_TYPE.FARM,
+            BUILDING_TYPE.MINE,
+            BUILDING_TYPE.FORGE,
+            BUILDING_TYPE.WINDMILL,
+            BUILDING_TYPE.CUSTOMS_HOUSE,
+        }
         low_tier = {BUILDING_TYPE.PORT, BUILDING_TYPE.SAWMILL, BUILDING_TYPE.LUMBER_HUT}
 
         if b_type in monuments:
@@ -286,11 +324,15 @@ class SimpleAgent(Agent):
         targets = a.get_targets(gs)
         for target in targets:
             if target.get_current_hp() < target.get_max_hp():
-                for t in this_unit.get_position().neighborhood(target.RANGE, 0, board.get_size()):
+                for t in this_unit.get_position().neighborhood(
+                    target.RANGE, 0, board.get_size()
+                ):
                     enemy = board.get_unit_at(t.x, t.y)
-                    if (enemy is not None
-                            and enemy.get_tribe_id() != target.get_tribe_id()
-                            and enemy.get_current_hp() > target.get_current_hp()):
+                    if (
+                        enemy is not None
+                        and enemy.get_tribe_id() != target.get_tribe_id()
+                        and enemy.get_current_hp() > target.get_current_hp()
+                    ):
                         potential_heals += 1
         return min(potential_heals, 5)
 
@@ -300,10 +342,22 @@ class SimpleAgent(Agent):
         if defender is None or attacker is None:
             return 0
         d = gs.get_board().get_diplomacy()
-        allegiance = d.get_allegiance_status()[attacker.get_tribe_id()][defender.get_tribe_id()]
-        high_value = {UNIT_TYPE.BATTLESHIP, UNIT_TYPE.SUPERUNIT, UNIT_TYPE.SWORDMAN,
-                      UNIT_TYPE.KNIGHT, UNIT_TYPE.CATAPULT}
-        mid_value = {UNIT_TYPE.MIND_BENDER, UNIT_TYPE.BOAT, UNIT_TYPE.SHIP, UNIT_TYPE.WARRIOR}
+        allegiance = d.get_allegiance_status()[attacker.get_tribe_id()][
+            defender.get_tribe_id()
+        ]
+        high_value = {
+            UNIT_TYPE.BATTLESHIP,
+            UNIT_TYPE.SUPERUNIT,
+            UNIT_TYPE.SWORDMAN,
+            UNIT_TYPE.KNIGHT,
+            UNIT_TYPE.CATAPULT,
+        }
+        mid_value = {
+            UNIT_TYPE.MIND_BENDER,
+            UNIT_TYPE.BOAT,
+            UNIT_TYPE.SHIP,
+            UNIT_TYPE.WARRIOR,
+        }
         if defender.get_type() in high_value:
             if allegiance < 0:
                 return 5
@@ -318,6 +372,7 @@ class SimpleAgent(Agent):
 
     def _eval_move(self, a: Action, gs: GameState, tribe: Tribe) -> int:
         from tribes.utils.vector2d import Vector2d
+
         dest = a.get_destination()
         this_unit: Unit = gs.get_actor(a.get_unit_id())
         current_pos = this_unit.get_position()
@@ -337,32 +392,50 @@ class SimpleAgent(Agent):
                     enemy = board.get_unit_at(x, y)
                     if enemy is not None and enemy.get_tribe_id() != tribe.tribe_id:
                         in_range = self._check_in_range(enemy, this_unit)
-                        if (enemy.DEF < this_unit.ATK
-                                and this_unit.get_current_hp() >= enemy.get_current_hp()):
-                            if (Vector2d.chebychev_distance(dest, enemy.get_position()) <
-                                    Vector2d.chebychev_distance(current_pos, enemy.get_position())):
+                        if (
+                            enemy.DEF < this_unit.ATK
+                            and this_unit.get_current_hp() >= enemy.get_current_hp()
+                        ):
+                            if Vector2d.chebychev_distance(
+                                dest, enemy.get_position()
+                            ) < Vector2d.chebychev_distance(
+                                current_pos, enemy.get_position()
+                            ):
                                 return 3
                         else:
-                            if (Vector2d.chebychev_distance(dest, enemy.get_position()) >
-                                    Vector2d.chebychev_distance(current_pos, enemy.get_position())
-                                    and in_range):
+                            if (
+                                Vector2d.chebychev_distance(dest, enemy.get_position())
+                                > Vector2d.chebychev_distance(
+                                    current_pos, enemy.get_position()
+                                )
+                                and in_range
+                            ):
                                 return 4
 
         # Check nearby cities and villages
-        for neigh in this_unit.get_position().neighborhood(this_unit.RANGE, 0, board.get_size()):
+        for neigh in this_unit.get_position().neighborhood(
+            this_unit.RANGE, 0, board.get_size()
+        ):
             x, y = neigh.x, neigh.y
             if obs_grid[x][y]:
                 city = board.get_city_in_borders(x, y)
                 terrain = board.get_terrain_at(x, y)
                 if city is not None and city.get_tribe_id() != tribe.tribe_id:
-                    if (Vector2d.chebychev_distance(dest, city.get_position()) <
-                            Vector2d.chebychev_distance(this_unit.get_position(), city.get_position())):
+                    if Vector2d.chebychev_distance(
+                        dest, city.get_position()
+                    ) < Vector2d.chebychev_distance(
+                        this_unit.get_position(), city.get_position()
+                    ):
                         return 4
                 if terrain is TERRAIN.VILLAGE:
                     from tribes.utils.vector2d import Vector2d as V
+
                     village_pos = V(x, y)
-                    if (Vector2d.chebychev_distance(dest, village_pos) <
-                            Vector2d.chebychev_distance(this_unit.get_position(), village_pos)):
+                    if Vector2d.chebychev_distance(
+                        dest, village_pos
+                    ) < Vector2d.chebychev_distance(
+                        this_unit.get_position(), village_pos
+                    ):
                         return 5
 
         # Encourage exploration: move next to fog
@@ -377,7 +450,9 @@ class SimpleAgent(Agent):
         defender: Unit = gs.get_actor(a.get_target_id())
         board = gs.get_board()
         d = board.get_diplomacy()
-        allegiance = d.get_allegiance_status()[attacker.get_tribe_id()][defender.get_tribe_id()]
+        allegiance = d.get_allegiance_status()[attacker.get_tribe_id()][
+            defender.get_tribe_id()
+        ]
 
         if not attacker.get_type().is_ranged():
             if attacker.get_current_hp() >= defender.get_current_hp():
@@ -398,7 +473,10 @@ class SimpleAgent(Agent):
                 if allegiance < 0:
                     return 5
                 return 2 if allegiance < 15 else 0
-            if defender.DEF < attacker.ATK and attacker.get_current_hp() >= defender.get_current_hp():
+            if (
+                defender.DEF < attacker.ATK
+                and attacker.get_current_hp() >= defender.get_current_hp()
+            ):
                 if allegiance < 0:
                     return 4
                 return 1 if allegiance < 15 else 0
@@ -406,5 +484,10 @@ class SimpleAgent(Agent):
 
     def _check_in_range(self, attacker: Unit, defender: Unit) -> bool:
         from tribes.utils.vector2d import Vector2d
-        return (Vector2d.chebychev_distance(defender.get_position(), attacker.get_position())
-                <= attacker.RANGE)
+
+        return (
+            Vector2d.chebychev_distance(
+                defender.get_position(), attacker.get_position()
+            )
+            <= attacker.RANGE
+        )

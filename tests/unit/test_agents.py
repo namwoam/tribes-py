@@ -1,4 +1,5 @@
 "Unit tests for agent implementations."
+
 import random
 import pytest
 from tribes.types import ACTION, GAME_MODE
@@ -12,6 +13,7 @@ def loaded_gs():
     """Return a GameState from the sample level, after one init_turn+compute cycle."""
     rnd = random.Random(0)
     from tribes.game.game_state import GameState
+
     gs = GameState(rnd, GAME_MODE.SCORE)
     gs.init("levels/sample_level.csv")
     tribe = gs.get_tribes()[0]

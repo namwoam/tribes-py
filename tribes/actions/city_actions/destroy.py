@@ -1,4 +1,5 @@
 "Destroy action + command."
+
 from __future__ import annotations
 
 import logging
@@ -31,7 +32,11 @@ class Destroy(CityAction):
             return False
         if board.get_city_id_at(tp.x, tp.y) != self.city_id:
             return False
-        return gs.get_tribe(city.tribe_id).get_tech_tree().is_researched(TECHNOLOGY.CONSTRUCTION)
+        return (
+            gs.get_tribe(city.tribe_id)
+            .get_tech_tree()
+            .is_researched(TECHNOLOGY.CONSTRUCTION)
+        )
 
     def execute(self, gs: GameState) -> bool:
         if not self.is_feasible(gs):

@@ -1,4 +1,5 @@
 "CityActionBuilder, ported from CityActionBuilder.java."
+
 from __future__ import annotations
 
 import logging
@@ -19,18 +20,29 @@ class CityActionBuilder:
     def get_actions(self, gs: GameState, city: City) -> list[Action]:
         from tribes.actions.city_actions.builders.level_up_factory import LevelUpFactory
         from tribes.actions.city_actions.builders.build_factory import BuildFactory
-        from tribes.actions.city_actions.builders.burn_forest_factory import BurnForestFactory
-        from tribes.actions.city_actions.builders.clear_forest_factory import ClearForestFactory
+        from tribes.actions.city_actions.builders.burn_forest_factory import (
+            BurnForestFactory,
+        )
+        from tribes.actions.city_actions.builders.clear_forest_factory import (
+            ClearForestFactory,
+        )
         from tribes.actions.city_actions.builders.destroy_factory import DestroyFactory
-        from tribes.actions.city_actions.builders.grow_forest_factory import GrowForestFactory
-        from tribes.actions.city_actions.builders.resource_gathering_factory import ResourceGatheringFactory
+        from tribes.actions.city_actions.builders.grow_forest_factory import (
+            GrowForestFactory,
+        )
+        from tribes.actions.city_actions.builders.resource_gathering_factory import (
+            ResourceGatheringFactory,
+        )
         from tribes.actions.city_actions.builders.spawn_factory import SpawnFactory
 
         all_actions: list[Action] = []
         self._level_up_flag = False
 
         if city.tribe_id != gs.get_active_tribe_id():
-            logger.error(f"Creating actions for city {city.actor_id} not controlled by active tribe.")
+            logger.error(
+                f"Creating actions for city {city.actor_id} not controlled by "
+                "active tribe."
+            )
             return all_actions
 
         # Level Up is checked first

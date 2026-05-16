@@ -1,4 +1,5 @@
 "TribeResult comparable data class, ported from TribeResult.java."
+
 from __future__ import annotations
 
 import logging
@@ -15,9 +16,17 @@ class TribeResult:
     Ordering: WIN first, then descending score, then tie-breakers.
     """
 
-    def __init__(self, id: int, result: RESULT, score: int,
-                 num_techs_researched: int, num_cities: int,
-                 production: int, num_wars: int, num_stars: int) -> None:
+    def __init__(
+        self,
+        id: int,
+        result: RESULT,
+        score: int,
+        num_techs_researched: int,
+        num_cities: int,
+        production: int,
+        num_wars: int,
+        num_stars: int,
+    ) -> None:
         self.id = id
         self.result = result
         self.score = score
@@ -124,6 +133,12 @@ class TribeResult:
 
     def copy(self) -> TribeResult:
         return TribeResult(
-            self.id, self.result, self.score, self.num_techs_researched,
-            self.num_cities, self.production, self.num_wars, self.num_stars
+            self.id,
+            self.result,
+            self.score,
+            self.num_techs_researched,
+            self.num_cities,
+            self.production,
+            self.num_wars,
+            self.num_stars,
         )

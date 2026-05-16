@@ -1,4 +1,5 @@
 "TradeNetwork — road/port/city connectivity grid, ported from TradeNetwork.java."
+
 from __future__ import annotations
 
 import logging
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 # NeighbourHelper implementations (inner-class equivalents)
 # ---------------------------------------------------------------------------
 
+
 class _TradeWaterStep:
     """Pathfinder helper for water navigation between ports."""
 
@@ -33,7 +35,10 @@ class _TradeWaterStep:
         step_cost = 1.0
         for tile in frm.neighborhood(1, 0, self._size):
             x, y = tile.x, tile.y
-            if self._navigable[x][y] and cost_from + step_cost <= cfg.PORT_TRADE_DISTANCE:
+            if (
+                self._navigable[x][y]
+                and cost_from + step_cost <= cfg.PORT_TRADE_DISTANCE
+            ):
                 neighbours.append(PathNode(Vector2d(x, y), step_cost))
         return neighbours
 
@@ -77,6 +82,7 @@ class _TradeNetworkStep:
 # TradeNetwork
 # ---------------------------------------------------------------------------
 
+
 class TradeNetwork:
     """Tracks which tiles belong to the trade network (roads, ports, cities)."""
 
@@ -114,7 +120,9 @@ class TradeNetwork:
             return
 
         if not tribe.controls_capital():
-            tribe.update_network(None, board, tribe.tribe_id == board.get_active_tribe_id())
+            tribe.update_network(
+                None, board, tribe.tribe_id == board.get_active_tribe_id()
+            )
             return
 
         n = self._size
@@ -138,8 +146,11 @@ class TradeNetwork:
                 elif not_enemy and board.is_road(i, j):
                     connected_tiles[i][j] = self._network_tiles[i][j]
 
-                if (ter in (TERRAIN.SHALLOW_WATER, TERRAIN.DEEP_WATER)
-                        and tribe.is_visible(i, j) and not_enemy):
+                if (
+                    ter in (TERRAIN.SHALLOW_WATER, TERRAIN.DEEP_WATER)
+                    and tribe.is_visible(i, j)
+                    and not_enemy
+                ):
                     navigable[i][j] = True
 
         tns = _TradeNetworkStep(connected_tiles)

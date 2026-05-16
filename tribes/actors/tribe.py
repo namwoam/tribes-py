@@ -1,17 +1,24 @@
 "Tribe actor, ported from Tribe.java."
+
 from __future__ import annotations
 
 import logging
 import random as _random
 from typing import TYPE_CHECKING, Optional
 
-logger = logging.getLogger(__name__)
-
+from tribes import config as cfg, constants as C
 from tribes.actors.actor import Actor
 from tribes.tech_tree import TechnologyTree
-from tribes.types import TECHNOLOGY, TRIBE as TRIBE_TYPE, RESULT, BUILDING as BUILDING_TYPE, MONUMENT_STATUS
+from tribes.types import (
+    BUILDING as BUILDING_TYPE,
+    MONUMENT_STATUS,
+    RESULT,
+    TECHNOLOGY,
+    TRIBE as TRIBE_TYPE,
+)
 from tribes.utils.vector2d import Vector2d
-from tribes import config as cfg, constants as C
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from tribes.actors.city import City
@@ -21,9 +28,12 @@ if TYPE_CHECKING:
 class Tribe(Actor):
     """A player tribe in the game."""
 
-    def __init__(self, tribe_type: TRIBE_TYPE,
-                 tribe_id: Optional[int] = None,
-                 city_id: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        tribe_type: TRIBE_TYPE,
+        tribe_id: Optional[int] = None,
+        city_id: Optional[int] = None,
+    ) -> None:
         super().__init__()
         self._tribe: TRIBE_TYPE = tribe_type
         if tribe_id is not None:
@@ -39,7 +49,9 @@ class Tribe(Actor):
         self._score: int = 0
         self._obs_grid: list[list[bool]] = []
         self._connected_cities: list[int] = []
-        self._monuments: dict[BUILDING_TYPE, MONUMENT_STATUS] = BUILDING_TYPE.init_monuments()
+        self._monuments: dict[BUILDING_TYPE, MONUMENT_STATUS] = (
+            BUILDING_TYPE.init_monuments()
+        )
         self._tribes_met: list[int] = []
         self._extra_units: list[int] = []
         self._n_kills: int = 0
@@ -114,8 +126,9 @@ class Tribe(Actor):
     # Visibility
     # ------------------------------------------------------------------
 
-    def clear_view(self, x: int, y: int, radius: int,
-                   rnd: _random.Random, board) -> bool:
+    def clear_view(
+        self, x: int, y: int, radius: int, rnd: _random.Random, board
+    ) -> bool:
         size = len(self._obs_grid)
         center = Vector2d(x, y)
         requires_network_update = False
@@ -129,7 +142,9 @@ class Tribe(Actor):
                 self._score += cfg.CLEAR_VIEW_POINTS
 
                 terr = board.get_terrain_at(tile.x, tile.y)
-                if board.is_road(tile.x, tile.y) or (terr is not None and terr.is_water()):
+                if board.is_road(tile.x, tile.y) or (
+                    terr is not None and terr.is_water()
+                ):
                     requires_network_update = True
 
             unit = board.get_unit_at(tile.x, tile.y)
@@ -145,8 +160,11 @@ class Tribe(Actor):
                 if board.get_tribe(city.tribe_id)._obs_grid[tile.x][tile.y]:
                     self._meet_tribe(rnd, board.get_tribes(), self.tribe_id)
 
-        if (not C.PLAY_WITH_FULL_OBS
-                and self._monuments.get(BUILDING_TYPE.EYE_OF_GOD) is MONUMENT_STATUS.UNAVAILABLE):
+        if (
+            not C.PLAY_WITH_FULL_OBS
+            and self._monuments.get(BUILDING_TYPE.EYE_OF_GOD)
+            is MONUMENT_STATUS.UNAVAILABLE
+        ):
             for row in self._obs_grid:
                 for val in row:
                     if not val:
@@ -219,8 +237,11 @@ class Tribe(Actor):
             capital_gain = len(added_cities) - len(lost_cities)
             capital.add_population(self, capital_gain)
 
-            if (len(self._connected_cities) >= cfg.GRAND_BAZAR_CITIES
-                    and self._monuments.get(BUILDING_TYPE.GRAND_BAZAR) is MONUMENT_STATUS.UNAVAILABLE):
+            if (
+                len(self._connected_cities) >= cfg.GRAND_BAZAR_CITIES
+                and self._monuments.get(BUILDING_TYPE.GRAND_BAZAR)
+                is MONUMENT_STATUS.UNAVAILABLE
+            ):
                 self._monuments[BUILDING_TYPE.GRAND_BAZAR] = MONUMENT_STATUS.AVAILABLE
 
         if this_tribes_turn:
@@ -240,8 +261,11 @@ class Tribe(Actor):
 
     def add_stars(self, stars: int) -> None:
         self._stars += stars
-        if (self._stars >= cfg.EMPERORS_TOMB_STARS
-                and self._monuments.get(BUILDING_TYPE.EMPERORS_TOMB) is MONUMENT_STATUS.UNAVAILABLE):
+        if (
+            self._stars >= cfg.EMPERORS_TOMB_STARS
+            and self._monuments.get(BUILDING_TYPE.EMPERORS_TOMB)
+            is MONUMENT_STATUS.UNAVAILABLE
+        ):
             self._monuments[BUILDING_TYPE.EMPERORS_TOMB] = MONUMENT_STATUS.AVAILABLE
 
     def subtract_stars(self, stars: int) -> None:
@@ -290,15 +314,20 @@ class Tribe(Actor):
 
     def add_kill(self) -> None:
         self._n_kills += 1
-        if (self._n_kills >= cfg.GATE_OF_POWER_KILLS
-                and self._monuments.get(BUILDING_TYPE.GATE_OF_POWER) is MONUMENT_STATUS.UNAVAILABLE):
+        if (
+            self._n_kills >= cfg.GATE_OF_POWER_KILLS
+            and self._monuments.get(BUILDING_TYPE.GATE_OF_POWER)
+            is MONUMENT_STATUS.UNAVAILABLE
+        ):
             self._monuments[BUILDING_TYPE.GATE_OF_POWER] = MONUMENT_STATUS.AVAILABLE
 
     def add_pacifist_count(self) -> None:
         if self._tech_tree.is_researched(TECHNOLOGY.MEDITATION):
             self._n_pacifist_count += 1
             if self._n_pacifist_count == cfg.ALTAR_OF_PEACE_TURNS:
-                self._monuments[BUILDING_TYPE.ALTAR_OF_PEACE] = MONUMENT_STATUS.AVAILABLE
+                self._monuments[BUILDING_TYPE.ALTAR_OF_PEACE] = (
+                    MONUMENT_STATUS.AVAILABLE
+                )
 
     def reset_pacifist_count(self) -> None:
         self._n_pacifist_count = 0
@@ -314,11 +343,17 @@ class Tribe(Actor):
         self._monuments[building] = MONUMENT_STATUS.BUILT
 
     def city_maxed_up(self) -> None:
-        if self._monuments.get(BUILDING_TYPE.PARK_OF_FORTUNE) is MONUMENT_STATUS.UNAVAILABLE:
+        if (
+            self._monuments.get(BUILDING_TYPE.PARK_OF_FORTUNE)
+            is MONUMENT_STATUS.UNAVAILABLE
+        ):
             self._monuments[BUILDING_TYPE.PARK_OF_FORTUNE] = MONUMENT_STATUS.AVAILABLE
 
     def all_researched(self) -> None:
-        if self._monuments.get(BUILDING_TYPE.TOWER_OF_WISDOM) is MONUMENT_STATUS.UNAVAILABLE:
+        if (
+            self._monuments.get(BUILDING_TYPE.TOWER_OF_WISDOM)
+            is MONUMENT_STATUS.UNAVAILABLE
+        ):
             self._monuments[BUILDING_TYPE.TOWER_OF_WISDOM] = MONUMENT_STATUS.AVAILABLE
 
     def get_monuments(self) -> dict:
@@ -349,7 +384,11 @@ class Tribe(Actor):
         target.set_city_id(-1)
 
     def remove_extra_unit(self, target: Unit) -> None:
-        idx = self._extra_units.index(target.get_actor_id()) if target.get_actor_id() in self._extra_units else -1
+        idx = (
+            self._extra_units.index(target.get_actor_id())
+            if target.get_actor_id() in self._extra_units
+            else -1
+        )
         if idx != -1:
             self._extra_units.pop(idx)
 
@@ -390,8 +429,10 @@ class Tribe(Actor):
     # ------------------------------------------------------------------
 
     def can_build_roads(self) -> bool:
-        return (self._tech_tree.is_researched(TECHNOLOGY.ROADS)
-                and self._stars >= cfg.ROAD_COST)
+        return (
+            self._tech_tree.is_researched(TECHNOLOGY.ROADS)
+            and self._stars >= cfg.ROAD_COST
+        )
 
     def get_max_production(self, game_state) -> int:
         total = 0
@@ -410,7 +451,8 @@ class Tribe(Actor):
             this_tree = self.get_tech_tree()
             met_tree = tribes[tribe_id].get_tech_tree()
             potential = [
-                t for t in TECHNOLOGY
+                t
+                for t in TECHNOLOGY
                 if met_tree.is_researched(t) and not this_tree.is_researched(t)
             ]
             if not potential:

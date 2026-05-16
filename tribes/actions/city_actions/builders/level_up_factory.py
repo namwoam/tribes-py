@@ -1,6 +1,8 @@
 "LevelUpFactory."
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tribes.actors.city import City
     from tribes.game.game_state import GameState
@@ -11,6 +13,7 @@ from tribes.types import CITY_LEVEL_UP
 class LevelUpFactory:
     def compute_action_variants(self, city: City, gs: GameState) -> list[Action]:
         from tribes.actions.city_actions.level_up import LevelUp
+
         actions: list[Action] = []
         bonuses = CITY_LEVEL_UP.get_actions(city.get_level())
         for bonus in bonuses:

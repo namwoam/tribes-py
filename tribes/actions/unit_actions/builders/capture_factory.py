@@ -1,6 +1,8 @@
 "CaptureFactory."
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from tribes.actors.units.unit import Unit
     from tribes.game.game_state import GameState
@@ -11,6 +13,7 @@ from tribes.types import TERRAIN
 class CaptureFactory:
     def compute_action_variants(self, unit: Unit, gs: GameState) -> list[Action]:
         from tribes.actions.unit_actions.capture import Capture
+
         captures: list[Action] = []
         if not unit.is_fresh():
             return captures

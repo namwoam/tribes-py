@@ -1,4 +1,5 @@
 "Examine action + command."
+
 from __future__ import annotations
 
 import logging
@@ -28,7 +29,10 @@ class Examine(UnitAction):
         t = gs.get_tribe(unit.tribe_id)
         if len(t.get_cities_id()) == 0:
             return False
-        return unit.is_fresh() and gs.get_board().get_resource_at(unit_pos.x, unit_pos.y) is RESOURCE.RUINS
+        return (
+            unit.is_fresh()
+            and gs.get_board().get_resource_at(unit_pos.x, unit_pos.y) is RESOURCE.RUINS
+        )
 
     def execute(self, gs: GameState) -> bool:
         if not self.is_feasible(gs):
@@ -55,10 +59,14 @@ class Examine(UnitAction):
             terr = board.get_terrain_at(spawn_pos.x, spawn_pos.y)
             if terr is not None and terr.is_water():
                 unit_type = UNIT_TYPE.BATTLESHIP
-                new_unit = UNIT_TYPE.create_unit(spawn_pos, 0, False, -1, unit.tribe_id, unit_type)
+                new_unit = UNIT_TYPE.create_unit(
+                    spawn_pos, 0, False, -1, unit.tribe_id, unit_type
+                )
                 new_unit.set_base_land_unit(UNIT_TYPE.WARRIOR)
             else:
-                new_unit = UNIT_TYPE.create_unit(spawn_pos, 0, False, -1, unit.tribe_id, UNIT_TYPE.SUPERUNIT)
+                new_unit = UNIT_TYPE.create_unit(
+                    spawn_pos, 0, False, -1, unit.tribe_id, UNIT_TYPE.SUPERUNIT
+                )
 
             unit_in_city = board.get_unit_at(spawn_pos.x, spawn_pos.y)
             if unit_in_city is not None:
@@ -71,7 +79,10 @@ class Examine(UnitAction):
         elif bonus is EXAMINE_BONUS.RESEARCH:
             researched = tech_tree.research_at_random(rnd)
             if not researched:
-                logger.error(f"{gs.get_tick()} ERROR: research_at_random couldn't do any research.")
+                logger.error(
+                    f"{gs.get_tick()} ERROR: research_at_random couldn't do "
+                    "any research."
+                )
             board.set_resource_at(spawn_pos.x, spawn_pos.y, None)
 
         elif bonus is EXAMINE_BONUS.POP_GROWTH:

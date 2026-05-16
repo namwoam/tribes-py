@@ -1,4 +1,5 @@
 "SendStars action + command."
+
 from __future__ import annotations
 
 import logging
@@ -35,7 +36,10 @@ class SendStars(TribeAction):
 
     def is_feasible(self, gs: GameState) -> bool:
         tribe = gs.get_tribe(self.tribe_id)
-        return tribe.can_send_stars(self._num_stars) and self._num_stars <= cfg.MIN_STARS_SEND
+        return (
+            tribe.can_send_stars(self._num_stars)
+            and self._num_stars <= cfg.MIN_STARS_SEND
+        )
 
     def execute(self, gs: GameState) -> bool:
         if not self.is_feasible(gs):
@@ -59,4 +63,7 @@ class SendStars(TribeAction):
         return ss
 
     def __str__(self) -> str:
-        return f"SEND_STARS by tribe {self.tribe_id} to: {self._target_id}: {self._num_stars} stars"
+        return (
+            f"SEND_STARS by tribe {self.tribe_id} to: "
+            f"{self._target_id}: {self._num_stars} stars"
+        )

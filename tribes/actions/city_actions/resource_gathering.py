@@ -1,4 +1,5 @@
 "ResourceGathering action + command."
+
 from __future__ import annotations
 
 import logging
@@ -32,8 +33,10 @@ class ResourceGathering(CityAction):
         city = gs.get_actor(self.city_id)
         board = gs.get_board()
         t = board.get_tribe(city.tribe_id)
-        if (board.get_resource_at(tp.x, tp.y) is not self._resource
-                or t.get_stars() < self._resource.get_cost()):
+        if (
+            board.get_resource_at(tp.x, tp.y) is not self._resource
+            or t.get_stars() < self._resource.get_cost()
+        ):
             return False
         tt = t.get_tech_tree()
         r = self._resource

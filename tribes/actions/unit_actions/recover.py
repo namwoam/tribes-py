@@ -1,4 +1,5 @@
 "Recover action + command."
+
 from __future__ import annotations
 
 import logging
@@ -36,7 +37,9 @@ class Recover(UnitAction):
         if not self.is_feasible(gs):
             return False
 
-        city_id = gs.get_board().get_city_id_at(unit.get_position().x, unit.get_position().y)
+        city_id = gs.get_board().get_city_id_at(
+            unit.get_position().x, unit.get_position().y
+        )
         if city_id != -1:
             cities_id = gs.get_tribe(unit.tribe_id).get_cities_id()
             if city_id in cities_id:

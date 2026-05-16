@@ -1,4 +1,5 @@
 "TribeActionBuilder, ported from TribeActionBuilder.java."
+
 from __future__ import annotations
 
 import logging
@@ -25,7 +26,9 @@ class TribeActionBuilder:
         all_actions: list[Action] = []
 
         if tribe.tribe_id != gs.get_active_tribe_id():
-            logger.error(f"Creating actions for tribe {tribe.tribe_id} that is not active.")
+            logger.error(
+                f"Creating actions for tribe {tribe.tribe_id} that is not active."
+            )
             return all_actions
 
         # Build Road
@@ -41,8 +44,9 @@ class TribeActionBuilder:
         stars = tribe.get_stars()
         num_cities = tribe.get_num_cities()
         for tech in TECHNOLOGY:
-            if (stars >= tech.get_cost(num_cities, tech_tree)
-                    and tech_tree.is_researchable(tech)):
+            if stars >= tech.get_cost(
+                num_cities, tech_tree
+            ) and tech_tree.is_researchable(tech):
                 rt = ResearchTech(tribe.tribe_id)
                 rt.set_tech(tech)
                 all_actions.append(rt)
@@ -53,8 +57,7 @@ class TribeActionBuilder:
         threshold = -(float(cfg.ALLEGIANCE_MAX) / 2.0)
         if not tribe.get_has_declared_war():
             for i in range(len(allegiances)):
-                if (allegiances[tribe.tribe_id][i] > threshold
-                        and tribe.tribe_id != i):
+                if allegiances[tribe.tribe_id][i] > threshold and tribe.tribe_id != i:
                     dw = DeclareWar(tribe.tribe_id)
                     dw.set_target_id(i)
                     all_actions.append(dw)
@@ -63,7 +66,9 @@ class TribeActionBuilder:
         if tribe.get_stars() > 0:
             tribes = gs.get_board().get_tribes()
             for ids in range(len(tribes)):
-                for stars_to_send in range(1, min(tribe.get_stars(), cfg.MIN_STARS_SEND)):
+                for stars_to_send in range(
+                    1, min(tribe.get_stars(), cfg.MIN_STARS_SEND)
+                ):
                     if ids != tribe.tribe_id and tribe.can_send_stars(stars_to_send):
                         ss = SendStars(tribe.tribe_id)
                         ss.set_num_stars(stars_to_send)

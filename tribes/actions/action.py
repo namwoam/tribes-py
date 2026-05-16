@@ -1,4 +1,5 @@
 "Abstract Action base class, ported from Action.java."
+
 from __future__ import annotations
 
 import logging

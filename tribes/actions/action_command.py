@@ -1,4 +1,5 @@
 "ActionCommand interface (kept for reference, not used directly)."
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

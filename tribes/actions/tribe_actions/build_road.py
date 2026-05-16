@@ -1,4 +1,5 @@
 "BuildRoad action + command."
+
 from __future__ import annotations
 
 import logging
@@ -33,7 +34,9 @@ class BuildRoad(TribeAction):
             return False
         if self._position is None:
             return False
-        return gs.get_board().can_build_road_at(self.tribe_id, self._position.x, self._position.y)
+        return gs.get_board().can_build_road_at(
+            self.tribe_id, self._position.x, self._position.y
+        )
 
     def execute(self, gs: GameState) -> bool:
         if not self.is_feasible(gs):

@@ -1,4 +1,5 @@
 "Unit tests for GameState."
+
 import random
 import pytest
 from tribes.types import GAME_MODE, ACTION
@@ -65,6 +66,7 @@ def test_end_turn_executes_and_sets_flag(gs):
     gs.init_turn(tribe)
     gs.compute_player_actions(tribe)
     from tribes.actions.tribe_actions.end_turn import EndTurn
+
     et = EndTurn(tribe.tribe_id)
     assert et.is_feasible(gs)
     gs.next(et)

@@ -1,4 +1,5 @@
 "GameState, ported from GameState.java."
+
 from __future__ import annotations
 
 import logging
@@ -51,6 +52,7 @@ class GameState:
 
     def _init_game_state(self, lines: list[str]) -> None:
         from tribes.game.level_loader import LevelLoader
+
         ll = LevelLoader()
         self._board = ll.build_level(lines, self._rnd)
 
@@ -59,8 +61,13 @@ class GameState:
             start_city_id = tribe.get_cities_id()[0]
             c: City = self._board.get_actor(start_city_id)
             city_pos = c.get_position()
-            tribe.clear_view(city_pos.x, city_pos.y,
-                             cfg.FIRST_CITY_CLEAR_RANGE, self._rnd, self._board)
+            tribe.clear_view(
+                city_pos.x,
+                city_pos.y,
+                cfg.FIRST_CITY_CLEAR_RANGE,
+                self._rnd,
+                self._board,
+            )
 
         self._can_end_turn = [False] * len(tribes)
 
@@ -69,14 +76,22 @@ class GameState:
     # ------------------------------------------------------------------
 
     def compute_player_actions(self, tribe: Tribe) -> None:
-        from tribes.actions.city_actions.builders.city_action_builder import CityActionBuilder
-        from tribes.actions.unit_actions.builders.unit_action_builder import UnitActionBuilder
-        from tribes.actions.tribe_actions.builders.tribe_action_builder import TribeActionBuilder
+        from tribes.actions.city_actions.builders.city_action_builder import (
+            CityActionBuilder,
+        )
+        from tribes.actions.unit_actions.builders.unit_action_builder import (
+            UnitActionBuilder,
+        )
+        from tribes.actions.tribe_actions.builders.tribe_action_builder import (
+            TribeActionBuilder,
+        )
 
         self._board.set_active_tribe_id(tribe.tribe_id)
 
-        if (self._computed_action_tribe_id_flag != -1
-                and self._computed_action_tribe_id_flag == tribe.tribe_id):
+        if (
+            self._computed_action_tribe_id_flag != -1
+            and self._computed_action_tribe_id_flag == tribe.tribe_id
+        ):
             return  # already computed
 
         self._computed_action_tribe_id_flag = tribe.tribe_id
@@ -146,8 +161,10 @@ class GameState:
             n_actions += len(self._unit_actions[unit_id])
             if n_actions > 0:
                 return True
-        if (len(self._tribe_actions) == 1
-                and self._tribe_actions[0].get_action_type() is ACTION.END_TURN):
+        if (
+            len(self._tribe_actions) == 1
+            and self._tribe_actions[0].get_action_type() is ACTION.END_TURN
+        ):
             return False
         return True
 
@@ -180,12 +197,17 @@ class GameState:
                         player_found = False
                         while not player_found:
                             cur_id = (cur_id + 1) % len(self._can_end_turn)
-                            if self._board.get_tribe(cur_id).get_winner() is not RESULT.LOSS:
+                            if (
+                                self._board.get_tribe(cur_id).get_winner()
+                                is not RESULT.LOSS
+                            ):
                                 player_found = True
                             if cur_id == self._board.get_active_tribe_id():
+                                active_tribe_id = self._board.get_active_tribe_id()
                                 logger.error(
-                                    f"ForwardModel ERROR: all players but {self._board.get_active_tribe_id()} "
-                                    f"lost, but not game over?")
+                                    "ForwardModel ERROR: all players but "
+                                    f"{active_tribe_id} lost, but not game over?"
+                                )
                                 self.game_over()
                                 break
 
@@ -231,7 +253,7 @@ class GameState:
             unit_id_at = self._board.get_unit_id_at(city_pos.x, city_pos.y)
             if unit_id_at > 0:
                 u: Unit = self.get_actor(unit_id_at)
-                produces = (u.tribe_id == tribe.tribe_id)
+                produces = u.tribe_id == tribe.tribe_id
 
             if produces:
                 acum_prod += city.get_production()
@@ -309,7 +331,8 @@ class GameState:
 
         if self._game_mode is GAME_MODE.SCORE:
             num_non_loss = sum(
-                1 for tr in self._ranking
+                1
+                for tr in self._ranking
                 if self.get_tribe(tr.get_id()).get_winner() is not RESULT.LOSS
             )
             is_ended = num_non_loss <= 1
@@ -329,16 +352,19 @@ class GameState:
 
     def compute_game_ranking(self) -> None:
         from tribes.game.tribe_result import TribeResult
+
         self._ranking = []
         for i in range(len(self._can_end_turn)):
             t = self._board.get_tribe(i)
             tr = TribeResult(
-                i, t.get_winner(), t.get_score(),
+                i,
+                t.get_winner(),
+                t.get_score(),
                 t.get_tech_tree().get_num_researched(),
                 t.get_num_cities(),
                 t.get_max_production(self),
                 t.get_n_wars_declared(),
-                t.get_n_stars_sent()
+                t.get_n_stars_sent(),
             )
             self._ranking.append(tr)
         self._ranking.sort()
