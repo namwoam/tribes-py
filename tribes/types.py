@@ -737,37 +737,39 @@ class RESULT(Enum):
 # ---------------------------------------------------------------------------
 
 class ACTION(Enum):
+    # Each member uses a unique ordinal as the first element to prevent
+    # Python enum from aliasing members that share (img_path, tech_name).
     # city
-    BUILD              = (None, None)
-    BURN_FOREST        = (None, "CHIVALRY")
-    CLEAR_FOREST       = (None, "FORESTRY")
-    DESTROY            = (None, "CONSTRUCTION")
-    GROW_FOREST        = (None, "SPIRITUALISM")
-    LEVEL_UP           = (None, None)
-    RESOURCE_GATHERING = (None, None)
-    SPAWN              = (None, None)
+    BUILD              = ( 0, None,                           None)
+    BURN_FOREST        = ( 1, None,                           "CHIVALRY")
+    CLEAR_FOREST       = ( 2, None,                           "FORESTRY")
+    DESTROY            = ( 3, None,                           "CONSTRUCTION")
+    GROW_FOREST        = ( 4, None,                           "SPIRITUALISM")
+    LEVEL_UP           = ( 5, None,                           None)
+    RESOURCE_GATHERING = ( 6, None,                           None)
+    SPAWN              = ( 7, None,                           None)
     # tribe
-    BUILD_ROAD         = (None, "ROADS")
-    END_TURN           = (None, None)
-    RESEARCH_TECH      = (None, None)
-    DECLARE_WAR        = (None, None)
-    SEND_STARS         = (None, None)
+    BUILD_ROAD         = ( 8, None,                           "ROADS")
+    END_TURN           = ( 9, None,                           None)
+    RESEARCH_TECH      = (10, None,                           None)
+    DECLARE_WAR        = (11, None,                           None)
+    SEND_STARS         = (12, None,                           None)
     # unit
-    ATTACK             = ("img/actions/attack.png",   None)
-    CAPTURE            = ("img/actions/capture.png",  None)
-    CONVERT            = ("img/actions/convert.png",  None)
-    DISBAND            = ("img/actions/disband.png",  "FREE_SPIRIT")
-    EXAMINE            = ("img/actions/examine.png",  None)
-    HEAL_OTHERS        = ("img/actions/heal2.png",    None)
-    MAKE_VETERAN       = (None, None)
-    MOVE               = ("img/actions/move.png",     None)
-    RECOVER            = (None, None)
+    ATTACK             = (13, "img/actions/attack.png",       None)
+    CAPTURE            = (14, "img/actions/capture.png",      None)
+    CONVERT            = (15, "img/actions/convert.png",      None)
+    DISBAND            = (16, "img/actions/disband.png",      "FREE_SPIRIT")
+    EXAMINE            = (17, "img/actions/examine.png",      None)
+    HEAL_OTHERS        = (18, "img/actions/heal2.png",        None)
+    MAKE_VETERAN       = (19, None,                           None)
+    MOVE               = (20, "img/actions/move.png",         None)
+    RECOVER            = (21, None,                           None)
     # other
-    CLIMB_MOUNTAIN     = (None, "CLIMBING")
-    UPGRADE_BOAT       = ("img/actions/upgrade.png",  "SAILING")
-    UPGRADE_SHIP       = ("img/actions/upgrade.png",  "NAVIGATION")
+    CLIMB_MOUNTAIN     = (22, None,                           "CLIMBING")
+    UPGRADE_BOAT       = (23, "img/actions/upgrade.png",      "SAILING")
+    UPGRADE_SHIP       = (24, "img/actions/upgrade.png",      "NAVIGATION")
 
-    def __init__(self, img_path: Optional[str], tech_name: Optional[str]) -> None:
+    def __init__(self, _key: int, img_path: Optional[str], tech_name: Optional[str]) -> None:
         self._img_path = img_path
         self._tech_name = tech_name
 
