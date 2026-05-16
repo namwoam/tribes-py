@@ -1,0 +1,17 @@
+[flake8]
+max-line-length = 100
+# E201/E221: whitespace/alignment in enum column definitions — intentional
+# E127: continuation line indentation — visual preference, not a bug
+# E231: missing whitespace after comma/colon — waived for dense enum data tables
+# E302/E305: blank lines around functions — waived for config-style module-level code
+# E501: line too long — enum data rows in types.py routinely exceed 100 chars
+# F821: undefined name — legitimate for TYPE_CHECKING forward refs and string annotations
+# E402: module level import not at top — deferred imports resolve circular dependencies
+extend-ignore = E201,E221,E127,E231,E302,E305,E501,F821,E402
+exclude =
+    .venv,
+    __pycache__,
+    .git,
+    build,
+    dist,
+    *.egg-info
