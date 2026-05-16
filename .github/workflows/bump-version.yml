@@ -1,0 +1,60 @@
+name: Bump Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [master, main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    # Only run when the PR was actually merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine bump part
+        id: bump
+        run: |
+          branch="${{ github.event.pull_request.head.ref }}"
+          if   [[ "$branch" == major/* ]]; then echo "part=major" >> "$GITHUB_OUTPUT"
+          elif [[ "$branch" == minor/* ]]; then echo "part=minor" >> "$GITHUB_OUTPUT"
+          elif [[ "$branch" == patch/* ]]; then echo "part=patch" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Branch '$branch' must start with major/, minor/, or patch/"
+            exit 1
+          fi
+
+      - name: Check out base branch
+        if: steps.bump.outputs.part != ''
+        uses: actions/checkout@v4
+        with:
+          # Check out the target branch (master/main), not the PR head
+          ref: ${{ github.event.pull_request.base.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        if: steps.bump.outputs.part != ''
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install bump-my-version
+        if: steps.bump.outputs.part != ''
+        run: uv tool install bump-my-version
+
+      - name: Configure git identity
+        if: steps.bump.outputs.part != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        if: steps.bump.outputs.part != ''
+        run: bump-my-version bump ${{ steps.bump.outputs.part }}
+
+      - name: Push version commit
+        if: steps.bump.outputs.part != ''
+        run: git push
