@@ -109,13 +109,28 @@ jobs:
             const marker = '<!-- coverage-report -->';
             const report = fs.readFileSync('coverage-report.md', 'utf8');
             const performanceReport = fs.readFileSync('performance-report.md', 'utf8');
+            const coverageLines = report.trim().split('\n');
+            const totalIndex = coverageLines.findIndex((line) => line.startsWith('| TOTAL '));
+            const coverageSummary = totalIndex === -1
+              ? report
+              : [
+                  coverageLines[0],
+                  coverageLines[1],
+                  coverageLines[totalIndex],
+                  '',
+                  '<details><summary>File coverage</summary>',
+                  '',
+                  report,
+                  '',
+                  '</details>',
+                ].join('\n');
             const body = [
               marker,
               '## CI report',
               '',
               '### Coverage report',
               '',
-              report,
+              coverageSummary,
               '',
               performanceReport,
             ].join('\n');
