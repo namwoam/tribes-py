@@ -30,6 +30,8 @@ jobs:
   test:
     name: "Test (Python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -164,7 +166,8 @@ jobs:
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.12' && env.CODECOV_TOKEN != ''
         with:
           file: coverage.xml
+          token: ${{ env.CODECOV_TOKEN }}
           fail_ci_if_error: false
