@@ -64,10 +64,10 @@ uv run python main.py --seed 42
 ## Running a tournament
 
 ```bash
-uv run python main.py --tournament config.json
+uv run python main.py --tournament sample-config.json
 ```
 
-Example `config.json`:
+Example `sample-config.json`:
 
 ```json
 {
@@ -120,7 +120,9 @@ uv run pre-commit run --all-files
 
 ## Version bumping
 
-PR branches must start with `major/`, `minor/`, or `patch/`. Merging one of these branches into `master` automatically bumps `pyproject.toml` and commits the new version via GitHub Actions.
+PR branches must start with `major/`, `minor/`, or `patch/`. Merging one of these branches into `master` or `main` automatically bumps `pyproject.toml`, commits the new version, publishes the package to PyPI, and deletes the merged branch via GitHub Actions.
+
+PyPI publishing uses trusted publishing with the GitHub Actions environment named `pypi`.
 
 ## Game modes
 
