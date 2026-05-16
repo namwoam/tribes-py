@@ -12,6 +12,9 @@ test = [
     "pytest>=8.0",
     "pytest-cov>=4.0",
 ]
+dev = [
+    "bump-my-version>=0.28",
+]
 
 [build-system]
 requires = ["hatchling"]
