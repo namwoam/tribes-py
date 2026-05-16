@@ -112,7 +112,9 @@ jobs:
             const report = fs.readFileSync('coverage-report.md', 'utf8');
             const performanceReport = fs.readFileSync('performance-report.md', 'utf8');
             const coverageLines = report.trim().split('\n');
-            const totalIndex = coverageLines.findIndex((line) => line.startsWith('| TOTAL '));
+            const totalIndex = coverageLines.findIndex((line) =>
+              line.replaceAll('*', '').startsWith('| TOTAL ')
+            );
             const coverageSummary = totalIndex === -1
               ? report
               : [
@@ -129,6 +131,9 @@ jobs:
             const body = [
               marker,
               '## CI report',
+              '',
+              `Commit: \`${context.sha.slice(0, 7)}\``,
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               '',
               '### Coverage report',
               '',
