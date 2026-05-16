@@ -7,6 +7,25 @@ on:
     branches: ["master", "main"]
 
 jobs:
+  branch-prefix:
+    name: Check branch prefix
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify version bump branch prefix
+        run: |
+          branch="${{ github.head_ref }}"
+          prefix="${branch%%/*}"
+
+          # Branches without a version bump prefix are allowed; they simply
+          # won't trigger an automatic version bump after merge.
+          lower_prefix="${prefix,,}"
+          if [[ "$lower_prefix" =~ ^(major|minor|patch)$ ]] && [[ "$prefix" != "$lower_prefix" ]]; then
+            echo "::error::Branch prefix '$prefix' looks like a version bump type but did not match (case-sensitive). Use lowercase: major/*, minor/*, or patch/*"
+            exit 1
+          fi
+
   test:
     name: "Test (Python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
