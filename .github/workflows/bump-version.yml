@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Determine bump part from branch name
+      - name: determine-bump-part
         id: bump
         run: |
           branch="${{ github.event.pull_request.head.ref }}"
@@ -23,26 +23,11 @@ jobs:
           elif [[ "$branch" == minor/* ]]; then echo "part=minor" >> "$GITHUB_OUTPUT"
           elif [[ "$branch" == patch/* ]]; then echo "part=patch" >> "$GITHUB_OUTPUT"
           else
-            echo "Branch '$branch' does not match major/*, minor/*, or patch/* — skipping version bump."
-            echo "part=" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Verify branch prefix is recognised
-        # Fail fast if the branch has a version-like prefix that was mis-spelled
-        # (e.g. "majour/foo" or "Major/foo"). Branches with no version prefix
-        # (feature/*, fix/*, etc.) are silently skipped.
-        run: |
-          branch="${{ github.event.pull_request.head.ref }}"
-          prefix="${branch%%/*}"
-          # If the prefix looks like it was intended as a bump type but was
-          # mis-spelled, surface an error rather than silently skipping.
-          shopt -s nocasematch
-          if [[ "$prefix" =~ ^(major|minor|patch)$ ]] && [[ "${{ steps.bump.outputs.part }}" == "" ]]; then
-            echo "::error::Branch prefix '$prefix' looks like a version bump type but did not match (case-sensitive). Use lowercase: major/*, minor/*, or patch/*"
+            echo "::error::Branch '$branch' must start with major/, minor/, or patch/"
             exit 1
           fi
 
-      - name: Checkout base branch
+      - name: check-out-base-branch
         if: steps.bump.outputs.part != ''
         uses: actions/checkout@v4
         with:
@@ -50,26 +35,26 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install uv
+      - name: install-uv
         if: steps.bump.outputs.part != ''
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 
-      - name: Install bump-my-version
+      - name: install-bump-my-version
         if: steps.bump.outputs.part != ''
         run: uv tool install bump-my-version
 
-      - name: Configure git identity
+      - name: configure-git-identity
         if: steps.bump.outputs.part != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump ${{ steps.bump.outputs.part }} version
+      - name: bump-version
         if: steps.bump.outputs.part != ''
         run: bump-my-version bump ${{ steps.bump.outputs.part }}
 
-      - name: Push version commit
+      - name: push-version-commit
         if: steps.bump.outputs.part != ''
         run: git push

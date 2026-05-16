@@ -120,7 +120,7 @@ uv run pre-commit run --all-files
 
 ## Version bumping
 
-Merging a PR whose branch starts with `major/`, `minor/`, or `patch/` into `master` automatically bumps `pyproject.toml` and commits the new version via GitHub Actions.
+PR branches must start with `major/`, `minor/`, or `patch/`. Merging one of these branches into `master` automatically bumps `pyproject.toml` and commits the new version via GitHub Actions.
 
 ## Game modes
 
