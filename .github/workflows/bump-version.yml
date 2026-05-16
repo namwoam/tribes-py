@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: determine-bump-part
+      - name: Determine bump part
         id: bump
         run: |
           branch="${{ github.event.pull_request.head.ref }}"
@@ -27,7 +27,7 @@ jobs:
             exit 1
           fi
 
-      - name: check-out-base-branch
+      - name: Check out base branch
         if: steps.bump.outputs.part != ''
         uses: actions/checkout@v4
         with:
@@ -35,26 +35,26 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: install-uv
+      - name: Install uv
         if: steps.bump.outputs.part != ''
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 
-      - name: install-bump-my-version
+      - name: Install bump-my-version
         if: steps.bump.outputs.part != ''
         run: uv tool install bump-my-version
 
-      - name: configure-git-identity
+      - name: Configure git identity
         if: steps.bump.outputs.part != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: bump-version
+      - name: Bump version
         if: steps.bump.outputs.part != ''
         run: bump-my-version bump ${{ steps.bump.outputs.part }}
 
-      - name: push-version-commit
+      - name: Push version commit
         if: steps.bump.outputs.part != ''
         run: git push

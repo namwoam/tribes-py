@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: check-branch-prefix
+      - name: Check branch prefix
         run: |
           branch="${{ github.head_ref }}"
 
@@ -33,31 +33,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install-uv
+      - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 
-      - name: set-up-python-${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
-      - name: install-dependencies
+      - name: Install dependencies
         run: uv sync --all-extras --python ${{ matrix.python-version }}
 
-      - name: syntax-check
+      - name: Syntax check
         run: |
           uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('tribes', quiet=True, force=True) else 1)"
 
-      - name: lint-flake8
+      - name: Lint with flake8
         run: uv run flake8 tribes tests main.py
 
-      - name: run-unit-tests
+      - name: Run unit tests
         run: uv run pytest tests/unit/ -v --tb=short
 
-      - name: run-e2e-tests
+      - name: Run e2e tests
         run: uv run pytest tests/e2e/ -v --tb=short
 
-      - name: run-full-test-suite-with-coverage
+      - name: Run full test suite with coverage
         run: |
           uv run pytest tests/ \
             --cov=tribes \
@@ -65,7 +65,7 @@ jobs:
             --cov-report=xml \
             -q
 
-      - name: upload-coverage-report
+      - name: Upload coverage report
         uses: codecov/codecov-action@v4
         if: matrix.python-version == '3.12'
         with:
