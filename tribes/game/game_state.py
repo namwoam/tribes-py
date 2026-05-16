@@ -50,6 +50,72 @@ class GameState:
     def init_from_lines(self, lines: list[str]) -> None:
         self._init_game_state(lines)
 
+    def init_generated(self, level_seed: int, tribes_enum: list) -> None:
+        lines = self._generate_level_lines(level_seed, tribes_enum)
+        self._init_game_state(lines)
+
+    def _generate_level_lines(self, level_seed: int, tribes_enum: list) -> list[str]:
+        from tribes.types import RESOURCE, TERRAIN
+
+        rnd = _random.Random(level_seed)
+        size = max(11, len(tribes_enum) * 4)
+        city_positions = self._generated_city_positions(size, len(tribes_enum))
+        city_position_set = set(city_positions)
+
+        lines: list[str] = []
+        for x in range(size):
+            row: list[str] = []
+            for y in range(size):
+                pos = (x, y)
+                if pos in city_position_set:
+                    tribe = tribes_enum[city_positions.index(pos)]
+                    row.append(f"{TERRAIN.CITY.get_map_char()}:{tribe.get_key()}")
+                    continue
+
+                terrain = TERRAIN.PLAIN
+                roll = rnd.random()
+                if roll < 0.12:
+                    terrain = TERRAIN.FOREST
+                elif roll < 0.18:
+                    terrain = TERRAIN.MOUNTAIN
+                elif roll < 0.23:
+                    terrain = TERRAIN.SHALLOW_WATER
+
+                resource = None
+                if terrain is TERRAIN.PLAIN and rnd.random() < 0.16:
+                    resource = rnd.choice((RESOURCE.FRUIT, RESOURCE.CROPS))
+                elif terrain is TERRAIN.FOREST and rnd.random() < 0.25:
+                    resource = RESOURCE.ANIMAL
+                elif terrain is TERRAIN.MOUNTAIN and rnd.random() < 0.22:
+                    resource = RESOURCE.ORE
+                elif terrain is TERRAIN.SHALLOW_WATER and rnd.random() < 0.25:
+                    resource = RESOURCE.FISH
+
+                if resource is None:
+                    row.append(f"{terrain.get_map_char()}:")
+                else:
+                    row.append(f"{terrain.get_map_char()}:{resource.get_map_char()}")
+            lines.append(",".join(row))
+        return lines
+
+    def _generated_city_positions(
+        self, size: int, num_tribes: int
+    ) -> list[tuple[int, int]]:
+        center = size // 2
+        candidates = [
+            (2, 2),
+            (size - 3, size - 3),
+            (2, size - 3),
+            (size - 3, 2),
+            (center, 2),
+            (center, size - 3),
+            (2, center),
+            (size - 3, center),
+        ]
+        if num_tribes > len(candidates):
+            raise ValueError(f"Generated levels support up to {len(candidates)} tribes")
+        return candidates[:num_tribes]
+
     def _init_game_state(self, lines: list[str]) -> None:
         from tribes.game.level_loader import LevelLoader
 

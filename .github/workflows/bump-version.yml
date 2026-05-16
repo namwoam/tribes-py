@@ -81,6 +81,13 @@ jobs:
         if: steps.bump.outputs.part != ''
         run: bump-my-version bump ${{ steps.bump.outputs.part }}
 
+      - name: Refresh uv lockfile
+        if: steps.bump.outputs.part != ''
+        run: |
+          uv lock
+          git add uv.lock
+          git commit --amend --no-edit
+
       - name: Read bumped version
         id: version
         if: steps.bump.outputs.part != ''
