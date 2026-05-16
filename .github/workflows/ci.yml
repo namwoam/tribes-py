@@ -30,11 +30,12 @@ jobs:
         run: uv sync --all-extras
 
       - name: Syntax check
-        run: uv run python -c "
-          import compileall, sys
-          ok = compileall.compile_dir('tribes', quiet=True, force=True)
-          sys.exit(0 if ok else 1)
-        "
+        run: |
+          uv run python -c "
+            import compileall, sys
+            ok = compileall.compile_dir('tribes', quiet=True, force=True)
+            sys.exit(0 if ok else 1)
+          "
 
       - name: Lint (flake8)
         run: uv run flake8 tribes tests main.py
