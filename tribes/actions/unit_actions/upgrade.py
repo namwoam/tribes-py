@@ -5,7 +5,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from tribes.actions.unit_actions.unit_action import UnitAction
-from tribes.types import ACTION, UNIT as UNIT_TYPE, TECHNOLOGY, TURN_STATUS
+from tribes.types import ACTION, UNIT as UNIT_TYPE, TECHNOLOGY
 
 logger = logging.getLogger(__name__)
 

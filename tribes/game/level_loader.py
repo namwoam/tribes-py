@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 import random as _random
-from typing import Optional
 
 from tribes.types import TERRAIN, RESOURCE, TRIBE as TRIBE_TYPE, UNIT as UNIT_TYPE
 from tribes.utils.vector2d import Vector2d
@@ -22,7 +21,6 @@ class LevelLoader:
     def build_level(self, lines: list[str], rnd: _random.Random):
         from tribes.game.board import Board
         from tribes.actors.city import City
-        from tribes.actors.tribe import Tribe
 
         self._height = len(lines)
         self._width = len(lines)

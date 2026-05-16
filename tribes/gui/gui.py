@@ -1,7 +1,6 @@
 "Pygame-based GUI for Tribes-py, replacing the Java Swing GUI."
 from __future__ import annotations
 
-import os
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional

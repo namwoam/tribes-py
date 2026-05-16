@@ -1,5 +1,4 @@
 "Unit tests for TribeResult ordering."
-import pytest
 from tribes.game.tribe_result import TribeResult
 from tribes.types import RESULT
 

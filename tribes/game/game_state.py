@@ -42,7 +42,6 @@ class GameState:
     # ------------------------------------------------------------------
 
     def init(self, filename: str) -> None:
-        import os
         with open(filename, "r") as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
         self._init_game_state(lines)
@@ -202,7 +201,6 @@ class GameState:
     # ------------------------------------------------------------------
 
     def end_turn(self, tribe: Tribe) -> None:
-        from tribes.actions.unit_actions.recover import Recover
         from tribes.actions.unit_actions.builders.recover_factory import RecoverFactory
 
         all_tribe_units: list[int] = []
@@ -221,8 +219,6 @@ class GameState:
                     recover_actions[0].execute(self)
 
     def init_turn(self, tribe: Tribe) -> None:
-        from tribes.actors.building import Temple
-
         tribe_cities = tribe.get_cities_id()
         all_tribe_units: list[int] = []
         self.set_end_turn(False)
@@ -358,7 +354,6 @@ class GameState:
         gs_copy._turn_must_end = self._turn_must_end
         gs_copy._game_is_over = self._game_is_over
 
-        num_tribes = len(self.get_tribes())
         gs_copy._can_end_turn = list(self._can_end_turn)
         gs_copy._leveling_up = self._leveling_up
 
@@ -484,14 +479,12 @@ class GameState:
         return self.get_active_tribe().get_tribes_met()
 
     def get_cities(self, player_id: int) -> list[City]:
-        from tribes.actors.city import City as CityActor
         cities = []
         for city_id in self.get_tribe(player_id).get_cities_id():
             cities.append(self._board.get_actor(city_id))
         return cities
 
     def get_units(self, player_id: int) -> list[Unit]:
-        from tribes.actors.units.unit import Unit as UnitActor
         units = []
         for city_id in self.get_tribe(player_id).get_cities_id():
             city: City = self._board.get_actor(city_id)
