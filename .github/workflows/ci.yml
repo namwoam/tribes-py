@@ -70,6 +70,7 @@ jobs:
             --cov=tribes \
             --cov-report=term-missing \
             --cov-report=xml \
+            -n auto \
             -q
           uv run coverage report --format=markdown > coverage-report.md
 
