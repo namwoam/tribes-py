@@ -137,3 +137,31 @@ def test_8_tribes_40x40_completes():
 def test_8_tribes_40x40_scores_nonnegative():
     game = _run_spec(["donothing"] * 8, spec_path=_8P_SPEC, seed=0)
     assert all(s >= 0 for s in game.get_scores())
+
+
+# ---------------------------------------------------------------------------
+# MCTS agent e2e tests
+# ---------------------------------------------------------------------------
+
+
+def test_mcts_2p_game_completes():
+    """MCTS agent completes a 2-player game without errors."""
+    game = _run_spec(["mcts", "donothing"], spec_path=_2P_SPEC, seed=SEED)
+    assert len(game.get_current_ranking()) == 2
+
+
+def test_mcts_2p_game_has_one_winner():
+    game = _run_spec(["mcts", "donothing"], spec_path=_2P_SPEC, seed=SEED)
+    winners = [r for r in game.get_current_ranking() if r.result is RESULT.WIN]
+    assert len(winners) == 1
+
+
+def test_mcts_all_results_not_incomplete():
+    game = _run_spec(["mcts", "donothing"], spec_path=_2P_SPEC, seed=SEED)
+    for r in game.get_current_ranking():
+        assert r.result is not RESULT.INCOMPLETE
+
+
+def test_mcts_scores_nonnegative():
+    game = _run_spec(["mcts", "random"], spec_path=_2P_SPEC, seed=1)
+    assert all(s >= 0 for s in game.get_scores())
