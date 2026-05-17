@@ -29,10 +29,10 @@ uv sync              # installs core + dev extras
 uv run python main.py
 
 # Specify a level and agents
-uv run python main.py --level levels/sample_level.csv --players random --players simple
+uv run python main.py --level levels/sample_level_2p.csv --players random --players simple
 
 # Enable the pygame GUI
-uv run python main.py --level levels/sample_level.csv --gui
+uv run python main.py --level levels/sample_level_2p.csv --gui
 
 # Score mode instead of Capitals
 uv run python main.py --mode score --players random --players donothing --players random --players donothing
