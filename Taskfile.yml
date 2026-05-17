@@ -36,6 +36,21 @@ tasks:
     cmds:
       - uv run python -m tribes.tournament
 
+  train:
+    desc: Train with SB3 MaskablePPO (pass CLI_ARGS to forward options)
+    cmds:
+      - uv run python train.py {{.CLI_ARGS}}
+
+  train-curriculum:
+    desc: Train with full curriculum (random→simple→self-play, 2→4 tribes)
+    cmds:
+      - uv run python train.py --curriculum {{.CLI_ARGS}}
+
+  tensorboard:
+    desc: Launch TensorBoard (default logdir runs/tb, override with LOGDIR=...)
+    cmds:
+      - uv run tensorboard --logdir {{.LOGDIR | default "runs/tb"}}
+
   clean:
     desc: Clean cache files
     cmds:
