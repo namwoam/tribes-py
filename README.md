@@ -1,6 +1,6 @@
-# Tribes — Python Port
+# tribes-py
 
-[![CI](https://github.com/GAIGResearch/Tribes/actions/workflows/ci.yml/badge.svg)](https://github.com/GAIGResearch/Tribes/actions/workflows/ci.yml)
+[![CI](https://github.com/namwoam/tribes-py/actions/workflows/ci.yml/badge.svg)](https://github.com/namwoam/tribes-py/actions/workflows/ci.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 
 A Python port of [Tribes](https://github.com/GAIGResearch/Tribes) — a multi-player, turn-based strategy game framework designed for AI research. The game involves managing a technology tree, economy, and unit combat across a partially-observable hex-style grid.
@@ -103,19 +103,18 @@ Twelve playable tribes, each with a unique starting technology and unit:
 ## Testing
 
 ```bash
-uv run pytest tests/unit/   # fast unit tests
-uv run pytest tests/e2e/    # full game runs
-uv run pytest tests/ --cov=tribes   # with coverage
+task test-unit   # fast unit tests
+task test-e2e    # full game runs
+task test        # all tests with coverage
 ```
 
 ## Code quality
 
 ```bash
-uv run flake8 tribes tests main.py   # lint
+task lint   # run all pre-commit hooks
 
 # Install pre-commit hooks (run once after cloning)
 uv run pre-commit install
-uv run pre-commit run --all-files
 ```
 
 ## Version bumping

@@ -4,7 +4,7 @@
 
 ## Changes
 
-- 
+-
 
 ## Testing
 
@@ -20,4 +20,3 @@
 - [ ] I updated docs or examples when behavior changed.
 - [ ] I checked that generated PR coverage/performance comments look reasonable.
 - [ ] I did not include unrelated refactors or generated files.
-
