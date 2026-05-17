@@ -225,6 +225,9 @@ class GUI:
         if key in self._unit_img_cache:
             return self._unit_img_cache[key]
         img = _load_image(f"{folder}{tid}{suffix}.png", (_CELL, _CELL))
+        if img is None:
+            # Fall back to tribe 0's sprite when tribe-specific image is missing
+            img = _load_image(f"{folder}0{suffix}.png", (_CELL, _CELL))
         self._unit_img_cache[key] = img
         return img
 
