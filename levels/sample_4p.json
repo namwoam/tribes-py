@@ -1,0 +1,6 @@
+{
+  "tribes": ["bardur", "imperius", "oumaji", "kickoo"],
+  "players": ["random", "random", "random", "random"],
+  "level": "levels/sample_level.csv",
+  "mode": "score"
+}

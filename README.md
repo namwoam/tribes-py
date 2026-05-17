@@ -25,34 +25,55 @@ uv sync              # installs core + dev extras
 ## Running a game
 
 ```bash
-# Headless game — randomly generated map, 2 random agents
+# Headless game — auto-generated 2-player map, random agents
 uv run python main.py
 
-# Specify tribes for the generated map
-uv run python main.py --tribes bardur --tribes imperius
+# Load a game-spec JSON file
+uv run python main.py --level levels/sample_2p.json
 
-# Use a fixed seed (also seeds the map generator)
-uv run python main.py --seed 42
-
-# Load a specific level file
-uv run python main.py --level levels/sample_level_2p.csv --players random --players simple
+# Override seed or mode from the command line
+uv run python main.py --level levels/sample_4p.json --seed 42 --mode score
 
 # Enable the pygame GUI
-uv run python main.py --gui
-
-# Score mode on a generated 4-player map
-uv run python main.py --mode score --players random --players donothing --players random --players donothing
+uv run python main.py --level levels/sample_2p.json --gui
 ```
+
+### Game-spec JSON format
+
+A game-spec JSON file captures everything needed to run a single game.
+Fields are optional and are auto-filled in the following order:
+`tribes_cnt` → `tribes` → `players` → `level`.
+
+```json
+{
+  "tribes_cnt": 2,
+  "tribes": ["bardur", "imperius"],
+  "players": ["random", "simple"],
+  "level": "levels/sample_level_2p.csv",
+  "seed": 42,
+  "mode": "capitals"
+}
+```
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `tribes_cnt` | int | inferred | Number of tribes; inferred from `tribes` or `level` |
+| `tribes` | list[str] | random | Tribe name per slot |
+| `players` | list[str] | all `"random"` | Agent type per slot |
+| `level` | str or list[str] | auto-generate | CSV file path, inline CSV rows, or omit to procedurally generate |
+| `seed` | int | random | RNG seed |
+| `mode` | str | `"capitals"` | Win condition: `"capitals"` or `"score"` |
+
+If `level` is omitted the board is procedurally generated from the resolved `tribes`.
+If both `tribes` and `level` are omitted, two random tribes are chosen and the board is generated.
 
 ### CLI reference
 
 | Flag | Default | Description |
 |---|---|---|
-| `--level FILE` | — | Path to a CSV level file; omit to generate a random map |
-| `--players TYPE` | `random` × n | Agent type per player slot; repeat for each slot |
-| `--tribes TRIBE` | random | Tribe per player slot for generated maps (ignored with `--level`) |
-| `--mode capitals\|score` | `capitals` | Win condition |
-| `--seed INT` | random | RNG seed; also seeds the map generator |
+| `--level JSON` | — | Path to a game-spec JSON file; omit to auto-generate |
+| `--seed INT` | from spec | RNG seed (overrides spec value) |
+| `--mode capitals\|score` | from spec | Win condition (overrides spec value) |
 | `--gui` | off | Open pygame window |
 | `--verbose` | off | Print detailed game events |
 | `--tournament JSON` | — | Run a tournament (see below) |
@@ -89,7 +110,19 @@ Results are printed per player: win rate, mean score, technologies researched, c
 
 ## Level files
 
-Pre-built levels live in `levels/`. All files are CSV with terrain/unit/resource tokens:
+### Game-spec JSON files (pass to `--level`)
+
+Ready-to-run specs live in `levels/`:
+
+| File | Players | Notes |
+|---|---|---|
+| `sample_2p.json` | 2 | 2-player game on `sample_level_2p.csv` |
+| `sample_4p.json` | 4 | 4-player game on `sample_level.csv` |
+| `sample_4p_generated.json` | 4 | 4-player procedurally generated map |
+
+### CSV map files (referenced by spec `"level"` field)
+
+Raw map grids — terrain/resource tokens in CSV format:
 
 | File | Players | Notes |
 |---|---|---|

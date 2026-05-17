@@ -50,6 +50,22 @@ class Game:
         self._init_structures(players, len(self._gs.get_tribes()))
         self._update_observations()
 
+    def init_from_lines(
+        self,
+        players: list[Agent],
+        lines: list[str],
+        seed: int,
+        game_mode: GAME_MODE,
+    ) -> None:
+        from tribes.game.game_state import GameState as GS
+
+        self._seed = seed
+        self._rnd = random.Random(seed)
+        self._gs = GS(self._rnd, game_mode)
+        self._gs.init_from_lines(lines)
+        self._init_structures(players, len(self._gs.get_tribes()))
+        self._update_observations()
+
     def init_generated(
         self,
         players: list[Agent],

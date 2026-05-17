@@ -1,0 +1,6 @@
+{
+  "tribes": ["bardur", "imperius"],
+  "players": ["random", "random"],
+  "level": "levels/sample_level_2p.csv",
+  "mode": "capitals"
+}

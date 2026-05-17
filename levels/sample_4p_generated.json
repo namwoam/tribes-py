@@ -1,0 +1,7 @@
+{
+  "tribes_cnt": 4,
+  "tribes": ["bardur", "imperius", "oumaji", "kickoo"],
+  "players": ["random", "simple", "donothing", "random"],
+  "mode": "score",
+  "seed": 42
+}

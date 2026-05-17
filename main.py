@@ -2,17 +2,17 @@
 
 Usage examples
 --------------
-Run a single headless game (randomly generated map):
+Run a headless game (auto-generated 2-player map):
     python main.py
 
-Run with GUI:
-    python main.py --gui
+Run with a JSON spec file:
+    python main.py --level levels/sample_2p.json
 
-Specify tribes for the generated map:
-    python main.py --tribes bardur --tribes imperius
+Override seed or mode from the CLI:
+    python main.py --level levels/sample_4p_generated.json --seed 42 --mode score
 
-Run from a level file:
-    python main.py --level levels/sample_level_2p.csv
+Enable the pygame GUI:
+    python main.py --level levels/sample_2p.json --gui
 
 Run a tournament via JSON config:
     python main.py --tournament config.json
@@ -23,14 +23,14 @@ from __future__ import annotations
 import json
 import logging
 import random as _random
-import time
 from typing import TYPE_CHECKING
 
 import click
 
 from tribes import constants as C
-from tribes.types import GAME_MODE, TRIBE as TRIBE_TYPE
+from tribes.types import GAME_MODE
 from tribes.game.game import Game
+from tribes.game.game_spec import GameSpec
 from tribes.tournament import Tournament, _make_agent
 
 if TYPE_CHECKING:
@@ -44,48 +44,8 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Quick-start helpers
+# Helpers
 # ---------------------------------------------------------------------------
-
-
-def _parse_tribe(name: str) -> TRIBE_TYPE:
-    mapping = {
-        "xin xi": TRIBE_TYPE.XIN_XI,
-        "xin_xi": TRIBE_TYPE.XIN_XI,
-        "imperius": TRIBE_TYPE.IMPERIUS,
-        "bardur": TRIBE_TYPE.BARDUR,
-        "oumaji": TRIBE_TYPE.OUMAJI,
-        "kickoo": TRIBE_TYPE.KICKOO,
-        "hoodrick": TRIBE_TYPE.HOODRICK,
-        "luxidoor": TRIBE_TYPE.LUXIDOOR,
-        "vengir": TRIBE_TYPE.VENGIR,
-        "zebasi": TRIBE_TYPE.ZEBASI,
-        "ai-mo": TRIBE_TYPE.AI_MO,
-        "ai_mo": TRIBE_TYPE.AI_MO,
-        "quetzali": TRIBE_TYPE.QUETZALI,
-        "yadakk": TRIBE_TYPE.YADAKK,
-    }
-    key = name.strip().lower()
-    if key not in mapping:
-        raise ValueError(f"Unknown tribe: {name!r}")
-    return mapping[key]
-
-
-def _count_tribes_in_level(level_file: str) -> int:
-    with open(level_file) as f:
-        lines = [line.rstrip("\n") for line in f]
-    count = 0
-    for line in lines:
-        for token in line.split(","):
-            parts = token.strip().split(":")
-            if (
-                parts[0]
-                and parts[0][0] == "c"
-                and len(parts) == 2
-                and parts[1].isdigit()
-            ):
-                count += 1
-    return count
 
 
 def _start_gui(game: Game) -> GUI | None:
@@ -98,34 +58,31 @@ def _start_gui(game: Game) -> GUI | None:
         return None
 
 
-def run_single_game(
-    level_file: str,
-    player_types: list[str],
-    seed: int,
-    game_mode: GAME_MODE,
-    with_gui: bool,
-) -> None:
-    players = [_make_agent(pt, seed) for pt in player_types]
-    game = Game()
-    game.init(players, level_file, seed, game_mode)
-    game.run(_start_gui(game) if with_gui else None)
+def run_game_from_spec(spec: GameSpec, with_gui: bool = False) -> None:
+    rng = _random.Random(spec.seed)
+    resolved = spec.resolve(rng)
+    players = [_make_agent(pt, resolved.seed) for pt in resolved.players]
 
-
-def run_generated_game(
-    player_types: list[str],
-    tribes: list[TRIBE_TYPE],
-    level_seed: int,
-    seed: int,
-    game_mode: GAME_MODE,
-    with_gui: bool,
-) -> None:
-    players = [_make_agent(pt, seed) for pt in player_types]
     game = Game()
-    game.init_generated(players, level_seed, tribes, seed, game_mode)
+    if resolved.level_lines is not None:
+        game.init_from_lines(
+            players, resolved.level_lines, resolved.seed, resolved.game_mode
+        )
+    else:
+        game.init_generated(
+            players,
+            resolved.seed,
+            resolved.tribes_enum,
+            resolved.seed,
+            resolved.game_mode,
+        )
+
     game.run(_start_gui(game) if with_gui else None)
 
 
 def run_tournament(config_path: str, with_gui: bool = False) -> None:
+    from tribes.game.game_spec import parse_tribe
+
     with open(config_path) as f:
         cfg = json.load(f)
 
@@ -143,7 +100,7 @@ def run_tournament(config_path: str, with_gui: bool = False) -> None:
     if len(player_names) != len(tribe_names):
         raise click.ClickException("Number of players must equal number of tribes.")
 
-    tribes = [_parse_tribe(t) for t in tribe_names]
+    tribes = [parse_tribe(t) for t in tribe_names]
     raw_seeds = cfg.get("Level Seeds", [-1])
     seeds = [int(s) for s in raw_seeds]
 
@@ -159,12 +116,7 @@ def run_tournament(config_path: str, with_gui: bool = False) -> None:
 # ---------------------------------------------------------------------------
 
 
-@click.command(
-    context_settings={
-        "allow_extra_args": True,
-        "help_option_names": ["-h", "--help"],
-    }
-)
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "--tournament",
     type=click.Path(exists=True, dir_okay=False, path_type=str),
@@ -174,124 +126,51 @@ def run_tournament(config_path: str, with_gui: bool = False) -> None:
 @click.option(
     "--level",
     type=click.Path(exists=True, dir_okay=False, path_type=str),
-    metavar="FILE",
-    help="Level file to load for a single game.",
-)
-@click.option(
-    "--players",
-    "player_types",
-    multiple=True,
-    default=(),
-    metavar="TYPE",
+    metavar="JSON",
     help=(
-        "Agent type for each player slot (default: auto-detect from level)."
-        ' Repeat for each slot, or pass a JSON array: \'["a1","a2"]\'.'
+        "Path to a game-spec JSON file. Omit to auto-generate a 2-player"
+        " game. See levels/*.json for examples."
     ),
-)
-@click.option(
-    "--tribes",
-    "tribe_names",
-    multiple=True,
-    default=(),
-    metavar="TRIBE",
-    help=(
-        "Tribe for each player slot when generating a map (ignored with --level)."
-        " Repeat for each slot. Defaults to random tribes."
-    ),
-)
-@click.option(
-    "--mode",
-    type=click.Choice(["capitals", "score"], case_sensitive=False),
-    default="capitals",
-    show_default=True,
-    help="Game mode.",
 )
 @click.option(
     "--seed",
     type=int,
     default=None,
-    help="Random seed.",
+    help="Random seed (overrides value in spec).",
 )
 @click.option(
-    "--gui",
-    is_flag=True,
-    help="Enable pygame GUI.",
+    "--mode",
+    type=click.Choice(["capitals", "score"], case_sensitive=False),
+    default=None,
+    show_default=False,
+    help="Game mode — capitals or score (overrides value in spec).",
 )
-@click.option(
-    "--verbose",
-    is_flag=True,
-    help="Enable verbose output.",
-)
-@click.pass_context
+@click.option("--gui", is_flag=True, help="Enable pygame GUI.")
+@click.option("--verbose", is_flag=True, help="Enable verbose output.")
 def main(
-    ctx: click.Context,
     tournament: str | None,
     level: str | None,
-    player_types: tuple[str, ...],
-    tribe_names: tuple[str, ...],
-    mode: str,
     seed: int | None,
+    mode: str | None,
     gui: bool,
     verbose: bool,
 ) -> None:
     """Tribes-py game runner."""
-    if ctx.args:
-        if not player_types:
-            raise click.UsageError(f"Unexpected argument(s): {' '.join(ctx.args)}")
-        player_types = (*player_types, *ctx.args)
-
-    if len(player_types) == 1:
-        try:
-            parsed = json.loads(player_types[0])
-            if isinstance(parsed, list) and all(isinstance(x, str) for x in parsed):
-                player_types = tuple(parsed)
-        except (json.JSONDecodeError, ValueError):
-            pass
-
     if verbose:
         C.VERBOSE = True
 
-    seed = seed if seed is not None else int(time.time() * 1000) & 0xFFFF_FFFF
-
     if tournament:
         run_tournament(tournament, with_gui=gui)
-    elif level is not None:
-        game_mode = (
-            GAME_MODE.CAPITALS if mode.lower() == "capitals" else GAME_MODE.SCORE
-        )
-        if not player_types:
-            n = _count_tribes_in_level(level)
-            players = ["random"] * n
-            logger.info("Level has %d tribes; using %d random agents.", n, n)
-        else:
-            players = list(player_types)
-        run_single_game(level, players, seed, game_mode, gui)
-    else:
-        # No level file — procedurally generate the map.
-        game_mode = (
-            GAME_MODE.CAPITALS if mode.lower() == "capitals" else GAME_MODE.SCORE
-        )
-        all_tribes = list(TRIBE_TYPE)
-        if tribe_names:
-            tribes = [_parse_tribe(t) for t in tribe_names]
-            n = len(tribes)
-        else:
-            n = len(player_types) if player_types else 2
-            tribes = _random.sample(all_tribes, k=min(n, len(all_tribes)))
-        players = list(player_types) if player_types else ["random"] * n
-        if len(players) != len(tribes):
-            raise click.ClickException(
-                f"Number of --players ({len(players)}) must match"
-                f" number of --tribes ({len(tribes)})."
-            )
-        level_seed = seed
-        logger.info(
-            "Generating map with seed %d, %d tribes: %s",
-            level_seed,
-            n,
-            [t.name for t in tribes],
-        )
-        run_generated_game(players, tribes, level_seed, seed, game_mode, gui)
+        return
+
+    spec = GameSpec.from_file(level) if level is not None else GameSpec()
+
+    if seed is not None:
+        spec.seed = seed
+    if mode is not None:
+        spec.mode = mode
+
+    run_game_from_spec(spec, with_gui=gui)
 
 
 if __name__ == "__main__":
