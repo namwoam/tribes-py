@@ -25,30 +25,55 @@ uv sync              # installs core + dev extras
 ## Running a game
 
 ```bash
-# Headless game (random agents, auto-picks first level file)
+# Headless game — auto-generated 2-player map, random agents
 uv run python main.py
 
-# Specify a level and agents
-uv run python main.py --level levels/sample_level_2p.csv --players random --players simple
+# Load a game-spec JSON file
+uv run python main.py --level levels/sample_2p.json
+
+# Override seed or mode from the command line
+uv run python main.py --level levels/sample_4p.json --seed 42 --mode score
 
 # Enable the pygame GUI
-uv run python main.py --level levels/sample_level_2p.csv --gui
-
-# Score mode instead of Capitals
-uv run python main.py --mode score --players random --players donothing --players random --players donothing
-
-# Set a fixed seed
-uv run python main.py --seed 42
+uv run python main.py --level levels/sample_2p.json --gui
 ```
+
+### Game-spec JSON format
+
+A game-spec JSON file captures everything needed to run a single game.
+Fields are optional and are auto-filled in the following order:
+`tribes_cnt` → `tribes` → `players` → `level`.
+
+```json
+{
+  "tribes_cnt": 2,
+  "tribes": ["bardur", "imperius"],
+  "players": ["random", "simple"],
+  "level": ["d:,d:,c:0,...", "d:,c:1,..."],
+  "seed": 42,
+  "mode": "capitals"
+}
+```
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `tribes_cnt` | int | inferred | Number of tribes; inferred from `tribes` or `level` |
+| `tribes` | list[str] | random | Tribe name per slot |
+| `players` | list[str] | all `"random"` | Agent type per slot |
+| `level` | list[str] | auto-generate | Inline CSV rows (one string per map row); omit to procedurally generate |
+| `seed` | int | random | RNG seed |
+| `mode` | str | `"capitals"` | Win condition: `"capitals"` or `"score"` |
+
+If `level` is omitted the board is procedurally generated from the resolved `tribes`.
+If both `tribes` and `level` are omitted, two random tribes are chosen and the board is generated.
 
 ### CLI reference
 
 | Flag | Default | Description |
 |---|---|---|
-| `--level FILE` | auto-detect | Path to a CSV level file |
-| `--players TYPE` | `random random` | Agent type per player slot; repeat for multiple players |
-| `--mode capitals\|score` | `capitals` | Win condition |
-| `--seed INT` | random | RNG seed for reproducibility |
+| `--level JSON` | — | Path to a game-spec JSON file; omit to auto-generate |
+| `--seed INT` | from spec | RNG seed (overrides spec value) |
+| `--mode capitals\|score` | from spec | Win condition (overrides spec value) |
 | `--gui` | off | Open pygame window |
 | `--verbose` | off | Print detailed game events |
 | `--tournament JSON` | — | Run a tournament (see below) |
@@ -71,13 +96,13 @@ Example `sample-config.json`:
 
 ```json
 {
-  "Game Mode": "Capitals",
-  "Repetitions": 3,
-  "Shift Tribes": true,
-  "Verbose": false,
-  "Players": ["random", "simple", "random", "simple"],
-  "Tribes": ["Imperius", "Bardur", "Oumaji", "Xin Xi"],
-  "Level Seeds": [42, 123]
+  "mode": "capitals",
+  "repetitions": 3,
+  "shift_tribes": true,
+  "verbose": false,
+  "players": ["random", "simple", "random", "simple"],
+  "tribes": ["imperius", "bardur", "oumaji", "xin_xi"],
+  "level_seeds": [42, 123]
 }
 ```
 
@@ -85,14 +110,14 @@ Results are printed per player: win rate, mean score, technologies researched, c
 
 ## Level files
 
-Pre-built levels live in `levels/`. All files are CSV with terrain/unit/resource tokens:
+Game-spec JSON files live in `levels/`. Each file is self-contained — the map grid is embedded as inline CSV rows inside the `"level"` field.
 
 | File | Players | Notes |
 |---|---|---|
-| `sample_level.csv` | 4 | Default 4-player map |
-| `sample_level_2p.csv` | 2 | Small 2-player map |
-| `balanced_level_4p.csv` | 4 | Symmetric 4-player map |
-| `minimal_level.csv` | 2 | Tiny map for unit tests |
+| `sample_2p.json` | 2 | Small 2-player hand-crafted map |
+| `sample_4p.json` | 4 | Default 4-player hand-crafted map |
+| `sample_8p.json` | 8 | Large 8-player hand-crafted map (40×40) |
+| `sample_4p_generated.json` | 4 | 4-player procedurally generated map |
 
 ## Tribes
 

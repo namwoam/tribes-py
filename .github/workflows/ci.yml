@@ -78,11 +78,7 @@ jobs:
         run: |
           /usr/bin/time -p -o sample-time.txt \
             uv run python main.py \
-              --level levels/sample_level.csv \
-              --players random \
-              --players random \
-              --players random \
-              --players random \
+              --level levels/sample_4p.json \
               --seed 42 \
               > sample-output.txt
 
@@ -92,12 +88,12 @@ jobs:
             echo ""
             echo "| Sample | Seed | Elapsed time |"
             echo "|---|---:|---:|"
-            echo "| \`levels/sample_level.csv\` with 4 random agents | \`42\` | \`${elapsed}s\` |"
+            echo "| \`levels/sample_4p.json\` with 4 random agents | \`42\` | \`${elapsed}s\` |"
             echo ""
             echo "<details><summary>Command</summary>"
             echo ""
             echo '```bash'
-            echo 'uv run python main.py --level levels/sample_level.csv --players random --players random --players random --players random --seed 42'
+            echo 'uv run python main.py --level levels/sample_4p.json --seed 42'
             echo '```'
             echo "</details>"
           } > performance-report.md

@@ -4,85 +4,81 @@ import json
 
 from click.testing import CliRunner
 
-from tribes.types import GAME_MODE
-
 import main
+from tribes.game.game_spec import GameSpec
 
 
-def test_cli_runs_single_game_with_click_player_options(monkeypatch):
+def test_cli_runs_with_spec_file(monkeypatch):
     calls = []
 
-    def fake_run_single_game(level_file, player_types, seed, game_mode, with_gui):
-        calls.append((level_file, player_types, seed, game_mode, with_gui))
+    def fake_run(spec, with_gui):
+        calls.append((spec, with_gui))
 
-    monkeypatch.setattr(main, "run_single_game", fake_run_single_game)
+    monkeypatch.setattr(main, "run_game_from_spec", fake_run)
 
-    result = CliRunner().invoke(
-        main.main,
-        [
-            "--level",
-            "levels/sample_level.csv",
-            "--players",
-            "random",
-            "--players",
-            "simple",
-            "--mode",
-            "score",
-            "--seed",
-            "42",
-        ],
-    )
+    result = CliRunner().invoke(main.main, ["--level", "levels/sample_2p.json"])
 
     assert result.exit_code == 0, result.output
-    assert calls == [
-        (
-            "levels/sample_level.csv",
-            ["random", "simple"],
-            42,
-            GAME_MODE.SCORE,
-            False,
-        )
-    ]
+    assert len(calls) == 1
+    spec, gui = calls[0]
+    assert isinstance(spec, GameSpec)
+    assert not gui
 
 
-def test_cli_keeps_legacy_players_argument_form(monkeypatch):
+def test_cli_seed_overrides_spec(monkeypatch):
     calls = []
 
-    def fake_run_single_game(level_file, player_types, seed, game_mode, with_gui):
-        calls.append((level_file, player_types, seed, game_mode, with_gui))
+    def fake_run(spec, with_gui):
+        calls.append(spec)
 
-    monkeypatch.setattr(main, "run_single_game", fake_run_single_game)
+    monkeypatch.setattr(main, "run_game_from_spec", fake_run)
 
-    result = CliRunner().invoke(
-        main.main,
-        [
-            "--level",
-            "levels/sample_level.csv",
-            "--players",
-            "random",
-            "simple",
-            "--seed",
-            "42",
-        ],
+    CliRunner().invoke(main.main, ["--level", "levels/sample_2p.json", "--seed", "99"])
+
+    assert calls[0].seed == 99
+
+
+def test_cli_mode_overrides_spec(monkeypatch):
+    calls = []
+
+    def fake_run(spec, with_gui):
+        calls.append(spec)
+
+    monkeypatch.setattr(main, "run_game_from_spec", fake_run)
+
+    CliRunner().invoke(
+        main.main, ["--level", "levels/sample_2p.json", "--mode", "score"]
     )
 
+    assert calls[0].mode == "score"
+
+
+def test_cli_auto_generates_when_no_level(monkeypatch):
+    calls = []
+
+    def fake_run(spec, with_gui):
+        calls.append(spec)
+
+    monkeypatch.setattr(main, "run_game_from_spec", fake_run)
+
+    result = CliRunner().invoke(main.main, [])
+
     assert result.exit_code == 0, result.output
-    assert calls == [
-        (
-            "levels/sample_level.csv",
-            ["random", "simple"],
-            42,
-            GAME_MODE.CAPITALS,
-            False,
-        )
-    ]
+    assert len(calls) == 1
+    assert calls[0].level is None  # no level → auto-generate
 
 
-def test_cli_rejects_unexpected_positional_arguments():
-    result = CliRunner().invoke(main.main, ["unexpected"])
+def test_cli_gui_flag(monkeypatch):
+    calls = []
 
-    assert result.exit_code == 2
-    assert "Unexpected argument(s): unexpected" in result.output
+    def fake_run(spec, with_gui):
+        calls.append(with_gui)
+
+    monkeypatch.setattr(main, "run_game_from_spec", fake_run)
+
+    CliRunner().invoke(main.main, ["--gui"])
+
+    assert calls[0] is True
 
 
 def test_cli_runs_tournament_with_generated_level(tmp_path):
@@ -90,13 +86,13 @@ def test_cli_runs_tournament_with_generated_level(tmp_path):
     config_path.write_text(
         json.dumps(
             {
-                "Game Mode": "Score",
-                "Repetitions": 1,
-                "Shift Tribes": True,
-                "Verbose": False,
-                "Players": ["do_nothing", "do_nothing"],
-                "Tribes": ["Imperius", "Bardur"],
-                "Level Seeds": [42],
+                "mode": "score",
+                "repetitions": 1,
+                "shift_tribes": True,
+                "verbose": False,
+                "players": ["do_nothing", "do_nothing"],
+                "tribes": ["imperius", "bardur"],
+                "level_seeds": [42],
             }
         )
     )
