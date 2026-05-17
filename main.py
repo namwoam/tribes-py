@@ -84,7 +84,7 @@ def run_single_game(
     game.run(gui)
 
 
-def run_tournament(config_path: str) -> None:
+def run_tournament(config_path: str, with_gui: bool = False) -> None:
     with open(config_path) as f:
         cfg = json.load(f)
 
@@ -110,7 +110,7 @@ def run_tournament(config_path: str) -> None:
     t.set_players(player_names)
     t.set_tribes(tribes)
     t.set_seeds(seeds)
-    t.run(repetitions, shift_tribes)
+    t.run(repetitions, shift_tribes, with_gui=with_gui)
 
 
 # ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@ def main(
     seed = seed if seed is not None else int(time.time() * 1000) & 0xFFFF_FFFF
 
     if tournament:
-        run_tournament(tournament)
+        run_tournament(tournament, with_gui=gui)
     else:
         if level is None:
             # Find first available level file
