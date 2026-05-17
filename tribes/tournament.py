@@ -72,7 +72,9 @@ class Tournament:
     # Run
     # ------------------------------------------------------------------
 
-    def run(self, repetitions: int = 1, shift_tribes: bool = True, with_gui: bool = False) -> None:
+    def run(
+        self, repetitions: int = 1, shift_tribes: bool = True, with_gui: bool = False
+    ) -> None:
         starter = 0
         total = len(self._seeds) * repetitions
 
@@ -109,6 +111,7 @@ class Tournament:
                     if with_gui:
                         try:
                             from tribes.gui.gui import GUI
+
                             gui = GUI(game)
                         except ImportError:
                             logger.warning("pygame not available – running headless.")
