@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from tribes.types import RESULT, TERRAIN
+from tribes.types import BUILDING, RESULT, TERRAIN
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +125,10 @@ class GUI:
         self._city_imgs = {
             k: _load_image(v, (_CELL, _CELL)) for k, v in _city_files.items()
         }
+
+        self._building_imgs: dict[BUILDING, Optional[pygame.Surface]] = {}
+        for b in BUILDING:
+            self._building_imgs[b] = _load_image(b._image_file, (_CELL, _CELL))
 
     # ------------------------------------------------------------------
     # Viewport helpers
@@ -366,6 +370,19 @@ class GUI:
                         px + _CELL // 2 - 2, py + _CELL // 2 - 2, 4, 4
                     )
                     pygame.draw.rect(self._screen, (180, 140, 80), road_rect)
+
+                # Building overlay (full tile)
+                building = board.get_building_at(x, y)
+                if building is not None:
+                    bimg = self._building_imgs.get(building)
+                    if bimg is not None:
+                        self._screen.blit(bimg, (px, py))
+                    else:
+                        pygame.draw.rect(
+                            self._screen,
+                            (200, 160, 60),
+                            pygame.Rect(px, py, _CELL, _CELL),
+                        )
 
         # Draw cities
         for tribe in tribes:

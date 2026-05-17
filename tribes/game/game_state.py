@@ -61,6 +61,10 @@ class GameState:
         size = max(11, len(tribes_enum) * 4)
         city_positions = self._generated_city_positions(size, len(tribes_enum))
         city_position_set = set(city_positions)
+        empty_city_positions = self._generated_empty_city_positions(
+            size, city_position_set, rnd
+        )
+        empty_city_position_set = set(empty_city_positions)
 
         lines: list[str] = []
         for x in range(size):
@@ -70,6 +74,10 @@ class GameState:
                 if pos in city_position_set:
                     tribe = tribes_enum[city_positions.index(pos)]
                     row.append(f"{TERRAIN.CITY.get_map_char()}:{tribe.get_key()}")
+                    continue
+
+                if pos in empty_city_position_set:
+                    row.append(f"{TERRAIN.VILLAGE.get_map_char()}:")
                     continue
 
                 terrain = TERRAIN.PLAIN
@@ -97,6 +105,34 @@ class GameState:
                     row.append(f"{terrain.get_map_char()}:{resource.get_map_char()}")
             lines.append(",".join(row))
         return lines
+
+    def _generated_empty_city_positions(
+        self,
+        size: int,
+        occupied: set[tuple[int, int]],
+        rnd: _random.Random,
+    ) -> list[tuple[int, int]]:
+        """Return village positions for empty (capturable) cities, scaled to map size."""  # noqa: E501
+        num_empty = max(1, size // 4)
+        min_gap = 3  # minimum distance from any occupied city
+        candidates = [
+            (x, y)
+            for x in range(1, size - 1)
+            for y in range(1, size - 1)
+            if (x, y) not in occupied
+            and all(abs(x - ox) + abs(y - oy) >= min_gap for ox, oy in occupied)
+        ]
+        rnd.shuffle(candidates)
+        chosen: list[tuple[int, int]] = []
+        chosen_set: set[tuple[int, int]] = set()
+        for pos in candidates:
+            if len(chosen) >= num_empty:
+                break
+            x, y = pos
+            if all(abs(x - cx) + abs(y - cy) >= min_gap for cx, cy in chosen_set):
+                chosen.append(pos)
+                chosen_set.add(pos)
+        return chosen
 
     def _generated_city_positions(
         self, size: int, num_tribes: int
