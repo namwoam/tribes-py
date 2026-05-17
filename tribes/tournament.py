@@ -72,7 +72,7 @@ class Tournament:
     # Run
     # ------------------------------------------------------------------
 
-    def run(self, repetitions: int = 1, shift_tribes: bool = True) -> None:
+    def run(self, repetitions: int = 1, shift_tribes: bool = True, with_gui: bool = False) -> None:
         starter = 0
         total = len(self._seeds) * repetitions
 
@@ -105,7 +105,14 @@ class Tournament:
 
                 try:
                     game = self._prepare_game(ordered_tribes, level_seed, ordered_types)
-                    game.run()
+                    gui = None
+                    if with_gui:
+                        try:
+                            from tribes.gui.gui import GUI
+                            gui = GUI(game)
+                        except ImportError:
+                            logger.warning("pygame not available – running headless.")
+                    game.run(gui)
                     self._record_results(game, assignment)
                     if shift_tribes:
                         starter = (starter + 1) % n
