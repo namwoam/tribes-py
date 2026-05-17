@@ -1,6 +1,6 @@
 "End-to-end tests: full game runs with different agent combinations."
 
-from tribes.types import GAME_MODE, RESULT
+from tribes.types import GAME_MODE, RESULT, TRIBE
 from tribes.game.game import Game
 from tribes.players.do_nothing_agent import DoNothingAgent
 from tribes.players.random_agent import RandomAgent
@@ -8,6 +8,8 @@ from tribes.players.simple_agent import SimpleAgent
 
 
 LEVEL = "levels/sample_level.csv"
+LEVEL_8P_40X40 = "levels/sample_level_8p_40x40.csv"
+TRIBES_8 = list(TRIBE)[:8]
 SEED = 42
 
 
@@ -90,3 +92,49 @@ def test_capitals_mode_game_completes():
     game = _run_game(players, mode=GAME_MODE.CAPITALS)
     ranking = game.get_current_ranking()
     assert len(ranking) == 4
+
+
+# ---------------------------------------------------------------------------
+# 8-tribe tests
+# ---------------------------------------------------------------------------
+
+
+def test_8_tribes_generated_completes():
+    """8-tribe procedurally generated game (32×32 board) runs to completion."""
+    players = [RandomAgent(i * 7) for i in range(8)]
+    game = Game()
+    game.init_generated(
+        players, level_seed=42, tribes_enum=TRIBES_8, seed=0, game_mode=GAME_MODE.SCORE
+    )
+    game.run()
+    ranking = game.get_current_ranking()
+    assert len(ranking) == 8
+
+
+def test_8_tribes_generated_has_one_winner():
+    players = [RandomAgent(i * 3) for i in range(8)]
+    game = Game()
+    game.init_generated(
+        players, level_seed=7, tribes_enum=TRIBES_8, seed=1, game_mode=GAME_MODE.SCORE
+    )
+    game.run()
+    winners = [r for r in game.get_current_ranking() if r.result is RESULT.WIN]
+    assert len(winners) == 1
+
+
+def test_8_tribes_40x40_completes():
+    """8-tribe game on the 40×40 hand-crafted level runs to completion."""
+    players = [RandomAgent(i * 5) for i in range(8)]
+    game = Game()
+    game.init(players, LEVEL_8P_40X40, seed=0, game_mode=GAME_MODE.SCORE)
+    game.run()
+    ranking = game.get_current_ranking()
+    assert len(ranking) == 8
+
+
+def test_8_tribes_40x40_scores_nonnegative():
+    players = [DoNothingAgent(i) for i in range(8)]
+    game = Game()
+    game.init(players, LEVEL_8P_40X40, seed=0, game_mode=GAME_MODE.SCORE)
+    game.run()
+    assert all(s >= 0 for s in game.get_scores())

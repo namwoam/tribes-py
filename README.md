@@ -25,30 +25,34 @@ uv sync              # installs core + dev extras
 ## Running a game
 
 ```bash
-# Headless game (random agents, auto-picks first level file)
+# Headless game — randomly generated map, 2 random agents
 uv run python main.py
 
-# Specify a level and agents
+# Specify tribes for the generated map
+uv run python main.py --tribes bardur --tribes imperius
+
+# Use a fixed seed (also seeds the map generator)
+uv run python main.py --seed 42
+
+# Load a specific level file
 uv run python main.py --level levels/sample_level_2p.csv --players random --players simple
 
 # Enable the pygame GUI
-uv run python main.py --level levels/sample_level_2p.csv --gui
+uv run python main.py --gui
 
-# Score mode instead of Capitals
+# Score mode on a generated 4-player map
 uv run python main.py --mode score --players random --players donothing --players random --players donothing
-
-# Set a fixed seed
-uv run python main.py --seed 42
 ```
 
 ### CLI reference
 
 | Flag | Default | Description |
 |---|---|---|
-| `--level FILE` | auto-detect | Path to a CSV level file |
-| `--players TYPE` | `random random` | Agent type per player slot; repeat for multiple players |
+| `--level FILE` | — | Path to a CSV level file; omit to generate a random map |
+| `--players TYPE` | `random` × n | Agent type per player slot; repeat for each slot |
+| `--tribes TRIBE` | random | Tribe per player slot for generated maps (ignored with `--level`) |
 | `--mode capitals\|score` | `capitals` | Win condition |
-| `--seed INT` | random | RNG seed for reproducibility |
+| `--seed INT` | random | RNG seed; also seeds the map generator |
 | `--gui` | off | Open pygame window |
 | `--verbose` | off | Print detailed game events |
 | `--tournament JSON` | — | Run a tournament (see below) |
@@ -91,6 +95,8 @@ Pre-built levels live in `levels/`. All files are CSV with terrain/unit/resource
 |---|---|---|
 | `sample_level.csv` | 4 | Default 4-player map |
 | `sample_level_2p.csv` | 2 | Small 2-player map |
+| `sample_level_4p_2.csv` | 4 | Alternate 4-player map |
+| `sample_level_8p_40x40.csv` | 8 | Large 8-player map (40×40) |
 | `balanced_level_4p.csv` | 4 | Symmetric 4-player map |
 | `minimal_level.csv` | 2 | Tiny map for unit tests |
 
