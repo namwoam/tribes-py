@@ -4,16 +4,18 @@ import random
 import pytest
 from tribes.types import GAME_MODE, ACTION
 from tribes.game.game_state import GameState
+from tribes.game.game_spec import GameSpec
 
 
-LEVEL = "levels/sample_level.csv"
+_SPEC = GameSpec.from_file("levels/sample_4p.json")
 
 
 @pytest.fixture()
 def gs():
     rnd = random.Random(42)
     state = GameState(rnd, GAME_MODE.SCORE)
-    state.init(LEVEL)
+    resolved = _SPEC.resolve(random.Random(42))
+    state.init_from_lines(resolved.level_lines)
     return state
 
 

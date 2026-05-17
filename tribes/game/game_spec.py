@@ -40,9 +40,7 @@ def parse_tribe(name: str) -> TRIBE_TYPE:
     return _TRIBE_NAME_MAP[key]
 
 
-def _count_tribes_in_csv(level_path: str) -> int:
-    with open(level_path) as f:
-        lines = [line.rstrip("\n") for line in f]
+def _count_tribes_in_lines(lines: list[str]) -> int:
     count = 0
     for line in lines:
         for token in line.split(","):
@@ -83,7 +81,7 @@ class GameSpec:
     tribes_cnt: Optional[int] = None
     tribes: Optional[list[str]] = None
     players: Optional[list[str]] = None
-    level: Optional[str | list[str]] = None
+    level: Optional[list[str]] = None
     seed: Optional[int] = None
     mode: str = "capitals"
 
@@ -145,8 +143,8 @@ class GameSpec:
             n = len(self.tribes)
         elif self.tribes_cnt is not None:
             n = self.tribes_cnt
-        elif isinstance(self.level, str):
-            n = _count_tribes_in_csv(self.level)
+        elif self.level is not None:
+            n = _count_tribes_in_lines(self.level)
         else:
             n = 2
 
@@ -170,13 +168,7 @@ class GameSpec:
         )
 
         # level lines
-        if self.level is None:
-            level_lines = None  # signal: use procedural generation
-        elif isinstance(self.level, list):
-            level_lines = list(self.level)
-        else:
-            with open(self.level) as f:
-                level_lines = [line.rstrip("\n") for line in f]
+        level_lines = list(self.level) if self.level is not None else None
 
         return ResolvedSpec(
             tribes_enum=tribes_enum,

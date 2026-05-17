@@ -86,23 +86,21 @@ def run_tournament(config_path: str, with_gui: bool = False) -> None:
     with open(config_path) as f:
         cfg = json.load(f)
 
+    mode_str = cfg.get("mode", "capitals")
     game_mode = (
-        GAME_MODE.CAPITALS
-        if cfg.get("Game Mode", "Capitals").lower() == "capitals"
-        else GAME_MODE.SCORE
+        GAME_MODE.CAPITALS if mode_str.lower() == "capitals" else GAME_MODE.SCORE
     )
-    repetitions = cfg.get("Repetitions", 1)
-    shift_tribes = cfg.get("Shift Tribes", True)
-    C.VERBOSE = cfg.get("Verbose", True)
+    repetitions = cfg.get("repetitions", 1)
+    shift_tribes = cfg.get("shift_tribes", True)
+    C.VERBOSE = cfg.get("verbose", True)
 
-    player_names: list[str] = cfg["Players"]
-    tribe_names: list[str] = cfg["Tribes"]
+    player_names: list[str] = cfg["players"]
+    tribe_names: list[str] = cfg["tribes"]
     if len(player_names) != len(tribe_names):
         raise click.ClickException("Number of players must equal number of tribes.")
 
     tribes = [parse_tribe(t) for t in tribe_names]
-    raw_seeds = cfg.get("Level Seeds", [-1])
-    seeds = [int(s) for s in raw_seeds]
+    seeds = [int(s) for s in cfg.get("level_seeds", [-1])]
 
     t = Tournament(game_mode)
     t.set_players(player_names)

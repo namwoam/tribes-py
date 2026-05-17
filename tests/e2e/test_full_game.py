@@ -8,34 +8,40 @@ from tribes.tournament import _make_agent
 
 SEED = 42
 
-_4P_LEVEL = "levels/sample_level.csv"
-_2P_LEVEL = "levels/sample_level_2p.csv"
-_8P_LEVEL = "levels/sample_level_8p_40x40.csv"
+_4P_SPEC = "levels/sample_4p.json"
+_2P_SPEC = "levels/sample_2p.json"
+_8P_SPEC = "levels/sample_8p.json"
 _TRIBES_8 = [t.name.lower() for t in list(TRIBE)[:8]]
 
 
-def _make_players(types, seed=SEED):
-    return [_make_agent(t, seed) for t in types]
-
-
-def _run_spec(spec_dict, seed=SEED):
-    """Run a game from a spec dict and return the completed Game."""
-    spec = GameSpec.from_dict({**spec_dict, "seed": seed})
+def _run_spec(players, spec_path=_4P_SPEC, seed=SEED):
+    """Load a spec file, override players and seed, run to completion."""
+    spec = GameSpec.from_file(spec_path)
+    spec.players = players
+    spec.seed = seed
     resolved = spec.resolve()
-    players = _make_players(resolved.players, resolved.seed)
+    agent_list = [_make_agent(p, resolved.seed) for p in resolved.players]
     game = Game()
-    if resolved.level_lines is not None:
-        game.init_from_lines(
-            players, resolved.level_lines, resolved.seed, resolved.game_mode
-        )
-    else:
-        game.init_generated(
-            players,
-            resolved.seed,
-            resolved.tribes_enum,
-            resolved.seed,
-            resolved.game_mode,
-        )
+    game.init_from_lines(
+        agent_list, resolved.level_lines, resolved.seed, resolved.game_mode
+    )
+    game.run()
+    return game
+
+
+def _run_generated(players, tribes, seed=SEED, mode="score"):
+    """Run a procedurally generated game."""
+    spec = GameSpec(tribes=tribes, players=players, seed=seed, mode=mode)
+    resolved = spec.resolve()
+    agent_list = [_make_agent(p, resolved.seed) for p in resolved.players]
+    game = Game()
+    game.init_generated(
+        agent_list,
+        resolved.seed,
+        resolved.tribes_enum,
+        resolved.seed,
+        resolved.game_mode,
+    )
     game.run()
     return game
 
@@ -46,84 +52,62 @@ def _run_spec(spec_dict, seed=SEED):
 
 
 def test_do_nothing_game_completes():
-    game = _run_spec(
-        {"level": _4P_LEVEL, "players": ["donothing"] * 4, "mode": "score"}
-    )
+    game = _run_spec(["donothing"] * 4)
     assert len(game.get_current_ranking()) == 4
 
 
 def test_do_nothing_game_has_one_winner():
-    game = _run_spec(
-        {"level": _4P_LEVEL, "players": ["donothing"] * 4, "mode": "score"}
-    )
+    game = _run_spec(["donothing"] * 4)
     winners = [r for r in game.get_current_ranking() if r.result is RESULT.WIN]
     assert len(winners) == 1
 
 
 def test_random_game_completes():
-    game = _run_spec({"level": _4P_LEVEL, "players": ["random"] * 4, "mode": "score"})
+    game = _run_spec(["random"] * 4)
     assert game.get_current_ranking()
 
 
 def test_mixed_agents_game_completes():
-    game = _run_spec(
-        {
-            "level": _4P_LEVEL,
-            "players": ["simple", "random", "donothing", "simple"],
-            "mode": "score",
-        }
-    )
+    game = _run_spec(["simple", "random", "donothing", "simple"])
     assert len(game.get_current_ranking()) == 4
 
 
 def test_all_results_not_incomplete_at_game_end():
-    game = _run_spec(
-        {"level": _4P_LEVEL, "players": ["donothing"] * 4, "mode": "score"}
-    )
+    game = _run_spec(["donothing"] * 4)
     for r in game.get_current_ranking():
         assert r.result is not RESULT.INCOMPLETE
 
 
 def test_simple_agent_wins_against_do_nothing():
     """SimpleAgent should beat DoNothingAgents in the 2-player level."""
-    spec = GameSpec.from_dict(
-        {
-            "level": _2P_LEVEL,
-            "players": ["simple", "donothing"],
-            "mode": "capitals",
-            "seed": SEED,
-        }
-    )
-    resolved = spec.resolve()
-    players = _make_players(resolved.players, resolved.seed)
-    game = Game()
-    game.init_from_lines(
-        players, resolved.level_lines, resolved.seed, resolved.game_mode
-    )
-    game.run()
+    game = _run_spec(["simple", "donothing"], spec_path=_2P_SPEC)
     ranking = game.get_current_ranking()
     winner = ranking[0]
     assert type(game.get_players()[winner.id]).__name__ == "SimpleAgent"
 
 
 def test_game_scores_nonnegative():
-    game = _run_spec(
-        {"level": _4P_LEVEL, "players": ["random"] * 4, "mode": "score"}, seed=1
-    )
+    game = _run_spec(["random"] * 4, seed=1)
     assert all(s >= 0 for s in game.get_scores())
 
 
 def test_game_2p_level_completes():
-    game = _run_spec(
-        {"level": _2P_LEVEL, "players": ["random", "donothing"], "mode": "score"}
-    )
+    game = _run_spec(["random", "donothing"], spec_path=_2P_SPEC)
     assert len(game.get_current_ranking()) == 2
 
 
 def test_capitals_mode_game_completes():
-    game = _run_spec(
-        {"level": _4P_LEVEL, "players": ["donothing"] * 4, "mode": "capitals"}
+    spec = GameSpec.from_file(_4P_SPEC)
+    spec.players = ["donothing"] * 4
+    spec.seed = SEED
+    spec.mode = "capitals"
+    resolved = spec.resolve()
+    agent_list = [_make_agent(p, resolved.seed) for p in resolved.players]
+    game = Game()
+    game.init_from_lines(
+        agent_list, resolved.level_lines, resolved.seed, resolved.game_mode
     )
+    game.run()
     assert len(game.get_current_ranking()) == 4
 
 
@@ -134,30 +118,22 @@ def test_capitals_mode_game_completes():
 
 def test_8_tribes_generated_completes():
     """8-tribe procedurally generated game runs to completion."""
-    game = _run_spec(
-        {"tribes": _TRIBES_8, "players": ["random"] * 8, "mode": "score"}, seed=42
-    )
+    game = _run_generated(["random"] * 8, _TRIBES_8, seed=42)
     assert len(game.get_current_ranking()) == 8
 
 
 def test_8_tribes_generated_has_one_winner():
-    game = _run_spec(
-        {"tribes": _TRIBES_8, "players": ["random"] * 8, "mode": "score"}, seed=7
-    )
+    game = _run_generated(["random"] * 8, _TRIBES_8, seed=7)
     winners = [r for r in game.get_current_ranking() if r.result is RESULT.WIN]
     assert len(winners) == 1
 
 
 def test_8_tribes_40x40_completes():
     """8-tribe game on the 40×40 hand-crafted level runs to completion."""
-    game = _run_spec(
-        {"level": _8P_LEVEL, "players": ["random"] * 8, "mode": "score"}, seed=0
-    )
+    game = _run_spec(["random"] * 8, spec_path=_8P_SPEC, seed=0)
     assert len(game.get_current_ranking()) == 8
 
 
 def test_8_tribes_40x40_scores_nonnegative():
-    game = _run_spec(
-        {"level": _8P_LEVEL, "players": ["donothing"] * 8, "mode": "score"}, seed=0
-    )
+    game = _run_spec(["donothing"] * 8, spec_path=_8P_SPEC, seed=0)
     assert all(s >= 0 for s in game.get_scores())

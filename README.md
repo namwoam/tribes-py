@@ -49,7 +49,7 @@ Fields are optional and are auto-filled in the following order:
   "tribes_cnt": 2,
   "tribes": ["bardur", "imperius"],
   "players": ["random", "simple"],
-  "level": "levels/sample_level_2p.csv",
+  "level": ["d:,d:,c:0,...", "d:,c:1,..."],
   "seed": 42,
   "mode": "capitals"
 }
@@ -60,7 +60,7 @@ Fields are optional and are auto-filled in the following order:
 | `tribes_cnt` | int | inferred | Number of tribes; inferred from `tribes` or `level` |
 | `tribes` | list[str] | random | Tribe name per slot |
 | `players` | list[str] | all `"random"` | Agent type per slot |
-| `level` | str or list[str] | auto-generate | CSV file path, inline CSV rows, or omit to procedurally generate |
+| `level` | list[str] | auto-generate | Inline CSV rows (one string per map row); omit to procedurally generate |
 | `seed` | int | random | RNG seed |
 | `mode` | str | `"capitals"` | Win condition: `"capitals"` or `"score"` |
 
@@ -96,13 +96,13 @@ Example `sample-config.json`:
 
 ```json
 {
-  "Game Mode": "Capitals",
-  "Repetitions": 3,
-  "Shift Tribes": true,
-  "Verbose": false,
-  "Players": ["random", "simple", "random", "simple"],
-  "Tribes": ["Imperius", "Bardur", "Oumaji", "Xin Xi"],
-  "Level Seeds": [42, 123]
+  "mode": "capitals",
+  "repetitions": 3,
+  "shift_tribes": true,
+  "verbose": false,
+  "players": ["random", "simple", "random", "simple"],
+  "tribes": ["imperius", "bardur", "oumaji", "xin_xi"],
+  "level_seeds": [42, 123]
 }
 ```
 
@@ -110,28 +110,14 @@ Results are printed per player: win rate, mean score, technologies researched, c
 
 ## Level files
 
-### Game-spec JSON files (pass to `--level`)
-
-Ready-to-run specs live in `levels/`:
+Game-spec JSON files live in `levels/`. Each file is self-contained — the map grid is embedded as inline CSV rows inside the `"level"` field.
 
 | File | Players | Notes |
 |---|---|---|
-| `sample_2p.json` | 2 | 2-player game on `sample_level_2p.csv` |
-| `sample_4p.json` | 4 | 4-player game on `sample_level.csv` |
+| `sample_2p.json` | 2 | Small 2-player hand-crafted map |
+| `sample_4p.json` | 4 | Default 4-player hand-crafted map |
+| `sample_8p.json` | 8 | Large 8-player hand-crafted map (40×40) |
 | `sample_4p_generated.json` | 4 | 4-player procedurally generated map |
-
-### CSV map files (referenced by spec `"level"` field)
-
-Raw map grids — terrain/resource tokens in CSV format:
-
-| File | Players | Notes |
-|---|---|---|
-| `sample_level.csv` | 4 | Default 4-player map |
-| `sample_level_2p.csv` | 2 | Small 2-player map |
-| `sample_level_4p_2.csv` | 4 | Alternate 4-player map |
-| `sample_level_8p_40x40.csv` | 8 | Large 8-player map (40×40) |
-| `balanced_level_4p.csv` | 4 | Symmetric 4-player map |
-| `minimal_level.csv` | 2 | Tiny map for unit tests |
 
 ## Tribes
 

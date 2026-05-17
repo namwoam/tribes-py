@@ -13,9 +13,12 @@ def loaded_gs():
     """Return a GameState from the sample level, after one init_turn+compute cycle."""
     rnd = random.Random(0)
     from tribes.game.game_state import GameState
+    from tribes.game.game_spec import GameSpec
 
+    spec = GameSpec.from_file("levels/sample_4p.json")
+    resolved = spec.resolve(random.Random(0))
     gs = GameState(rnd, GAME_MODE.SCORE)
-    gs.init("levels/sample_level.csv")
+    gs.init_from_lines(resolved.level_lines)
     tribe = gs.get_tribes()[0]
     gs.init_turn(tribe)
     gs.compute_player_actions(tribe)
