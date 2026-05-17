@@ -16,7 +16,7 @@ Optional:
 ## Installation
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/namwoam/tribes-py
 cd tribes-py
 uv sync              # installs core + dev extras
 # or: pip install -e ".[test,dev]"
