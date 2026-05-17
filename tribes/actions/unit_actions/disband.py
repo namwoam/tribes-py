@@ -21,6 +21,8 @@ class Disband(UnitAction):
 
     def is_feasible(self, gs: GameState) -> bool:
         unit = gs.get_actor(self.unit_id)
+        if unit is None:
+            return False
         tt = gs.get_tribe(unit.tribe_id).get_tech_tree()
         return unit.is_fresh() and tt.is_researched(TECHNOLOGY.FREE_SPIRIT)
 
