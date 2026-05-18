@@ -2,6 +2,7 @@
 name = "tribes-py"
 version = "1.6.0"
 description = "Python port of Tribes strategy game"
+license = { text = "MIT" }
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "click>=8.0",
