@@ -207,4 +207,8 @@ def _make_agent(player_type: str, seed: int) -> "Agent":
         return DoNothingAgent(seed)
     if pt in ("simple", "rule based", "rule_based"):
         return SimpleAgent(seed)
+    if pt in ("mcts",):
+        from tribes.players.mcts import MCTSAgent
+
+        return MCTSAgent(seed)
     raise ValueError(f"Unknown player type: {player_type!r}")

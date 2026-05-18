@@ -32,7 +32,8 @@ class Attack(UnitAction):
         target = gs.get_actor(self._target_id)
         attacker = gs.get_actor(self.unit_id)
         if (
-            target is None
+            attacker is None
+            or target is None
             or not attacker.can_attack()
             or attacker.get_type() is UNIT_TYPE.MIND_BENDER
         ):
