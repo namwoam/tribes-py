@@ -36,6 +36,8 @@ class Capture(UnitAction):
 
     def is_feasible(self, gs: GameState) -> bool:
         unit = gs.get_actor(self.unit_id)
+        if unit is None:
+            return False
         if not unit.is_fresh():
             return False
         b = gs.get_board()
