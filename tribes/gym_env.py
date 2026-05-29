@@ -12,13 +12,23 @@ from gymnasium import spaces
 from tribes.game.game_state import GameState
 from tribes.players.random_agent import RandomAgent
 from tribes.types import ACTION, GAME_MODE, TERRAIN, TRIBE as TRIBE_TYPE, RESULT
+from tribes.constants import MAX_TURNS
 
 MAX_BOARD_SIZE = 24
 MAX_N_TRIBES = 8
 MAX_ACTIONS = 512
 
-WIN_REWARD = 20.0
-LOSS_REWARD = -20.0
+WIN_REWARD = 100.0
+LOSS_REWARD = -100.0
+
+# Shaped-reward bonuses for discrete game milestones.
+# These fire the moment the event occurs, giving dense credit-assignment signal
+# for the multi-step sequences that lead to city capture / tech unlock / kill.
+_CITY_BONUS = 5.0    # per new city gained (village capture or conquest)
+_TECH_BONUS = 2.0    # per technology researched
+_KILL_BONUS = 1.0    # per enemy unit killed
+# Divisor for raw score delta so it stays in a similar range as the bonuses.
+_SCORE_NORM = 100.0
 
 
 # ---------------------------------------------------------------------------
@@ -26,11 +36,18 @@ LOSS_REWARD = -20.0
 # ---------------------------------------------------------------------------
 
 
-def game_state_to_obs(gs) -> dict:
+def game_state_to_obs(gs, perspective: int = 0) -> dict:
     """Convert a live GameState to the TribesEnv Dict observation format.
 
     Can be called outside TribesEnv (e.g. by SelfPlayAgent) as long as the
     GameState has been initialised and compute_player_actions has been called.
+
+    Parameters
+    ----------
+    perspective:
+        Tribe ID of the agent whose point-of-view we encode.  Units belonging
+        to this tribe are encoded as +1 in ``unit_tribe``; all other units are
+        encoded as -1.  The default (0) is correct for the main RL agent.
     """
     board = gs.get_board()
     size = board.get_size()
@@ -38,11 +55,20 @@ def game_state_to_obs(gs) -> dict:
     n_players = min(len(gs.get_tribes()), MAX_N_TRIBES)
 
     fog_key = TERRAIN.FOG.get_key()
-    terrain = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), fog_key, dtype=np.int8)
-    resource = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
-    building = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
-    unit_type = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
-    unit_tribe = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    terrain    = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), fog_key, dtype=np.int8)
+    resource   = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    building   = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    unit_type  = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    # One binary plane per relative player: unit_tribe_planes[k, x, y] = 1 iff
+    # the k-th relative player (0=self, 1=opp1, …) has a unit at (x, y).
+    # Binary planes avoid the false linear ordering of a single ordinal channel
+    # where empty/self/enemy all differ by the same tiny 0.125 step.
+    unit_tribe_planes = np.zeros((MAX_N_TRIBES, MAX_BOARD_SIZE, MAX_BOARD_SIZE), dtype=np.int8)
+    # New channels
+    unit_hp    = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    unit_fresh = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    city_owner = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    is_road    = np.zeros((MAX_BOARD_SIZE, MAX_BOARD_SIZE), dtype=np.int8)
 
     for x in range(capped):
         for y in range(capped):
@@ -55,12 +81,24 @@ def game_state_to_obs(gs) -> dict:
             b = board.get_building_at(x, y)
             if b is not None:
                 building[x, y] = b.get_key()
-            uid = board.get_unit_id_at(x, y)
-            if uid != 0:
-                unit = board.get_actor(uid)
-                if unit is not None:
-                    unit_type[x, y] = unit.get_type().get_key()
-                    unit_tribe[x, y] = unit.tribe_id
+            unit = board.get_unit_at(x, y)
+            if unit is not None:
+                unit_type[x, y] = unit.get_type().get_key()
+                rel_idx = (unit.tribe_id - perspective) % n_players
+                unit_tribe_planes[rel_idx, x, y] = 1
+                max_hp = unit.get_max_hp()
+                unit_hp[x, y] = round(10 * unit.get_current_hp() / max_hp) if max_hp > 0 else 0
+                unit_fresh[x, y] = 1 if unit.is_fresh() else 0
+            city = board.get_city_in_borders(x, y)
+            if city is not None:
+                if city.tribe_id == -1:
+                    city_owner[x, y] = 0   # neutral/uncaptured village
+                elif city.tribe_id == perspective:
+                    city_owner[x, y] = 1   # own city
+                else:
+                    city_owner[x, y] = 2   # enemy city
+            if board.is_road(x, y):
+                is_road[x, y] = 1
 
     tribe_stars = np.zeros(MAX_N_TRIBES, dtype=np.int32)
     tribe_score = np.zeros(MAX_N_TRIBES, dtype=np.int32)
@@ -76,17 +114,24 @@ def game_state_to_obs(gs) -> dict:
         tribe_kills[i] = t.get_n_kills()
         tribe_techs[i] = t.get_tech_tree().get_num_researched()
 
+    game_tick = np.array([gs.get_tick() / MAX_TURNS], dtype=np.float32)
+
     return {
         "terrain": terrain,
         "resource": resource,
         "building": building,
         "unit_type": unit_type,
-        "unit_tribe": unit_tribe,
+        **{f"unit_tribe_{k}": unit_tribe_planes[k] for k in range(MAX_N_TRIBES)},
+        "unit_hp": unit_hp,
+        "unit_fresh": unit_fresh,
+        "city_owner": city_owner,
+        "is_road": is_road,
         "tribe_stars": tribe_stars,
         "tribe_score": tribe_score,
         "tribe_cities": tribe_cities,
         "tribe_kills": tribe_kills,
         "tribe_techs": tribe_techs,
+        "game_tick": game_tick,
     }
 
 
@@ -144,9 +189,8 @@ class TribesEnv(gym.Env):
                 "resource": spaces.Box(-1, 7, board_shape, dtype=np.int8),
                 "building": spaces.Box(-1, 18, board_shape, dtype=np.int8),
                 "unit_type": spaces.Box(-1, 11, board_shape, dtype=np.int8),
-                "unit_tribe": spaces.Box(
-                    -1, MAX_N_TRIBES - 1, board_shape, dtype=np.int8
-                ),
+                **{f"unit_tribe_{k}": spaces.Box(0, 1, board_shape, dtype=np.int8)
+                   for k in range(MAX_N_TRIBES)},
                 "tribe_stars": spaces.Box(0, 2**15, (MAX_N_TRIBES,), dtype=np.int32),
                 "tribe_score": spaces.Box(0, 2**15, (MAX_N_TRIBES,), dtype=np.int32),
                 "tribe_cities": spaces.Box(
@@ -154,6 +198,11 @@ class TribesEnv(gym.Env):
                 ),
                 "tribe_kills": spaces.Box(0, 2**15, (MAX_N_TRIBES,), dtype=np.int32),
                 "tribe_techs": spaces.Box(0, 23, (MAX_N_TRIBES,), dtype=np.int32),
+                "game_tick": spaces.Box(0.0, 1.0, (1,), dtype=np.float32),
+                "unit_hp": spaces.Box(-1, 10, board_shape, dtype=np.int8),
+                "unit_fresh": spaces.Box(-1, 1, board_shape, dtype=np.int8),
+                "city_owner": spaces.Box(-1, 2, board_shape, dtype=np.int8),
+                "is_road": spaces.Box(0, 1, board_shape, dtype=np.int8),
             }
         )
         self.action_space = spaces.Discrete(MAX_ACTIONS)
@@ -163,6 +212,10 @@ class TribesEnv(gym.Env):
         self._n_players: int = 0
         self._legal_actions: list = []
         self._prev_score: int = 0
+        self._prev_cities: int = 0
+        self._prev_techs: int = 0
+        self._prev_kills: int = 0
+        self._prev_relative_score: float = 0.0
         self._rng: random.Random = random.Random(seed)
 
     # ------------------------------------------------------------------
@@ -200,7 +253,15 @@ class TribesEnv(gym.Env):
             opp.set_player_ids(i + 1, list(range(self._n_players)))
 
         self._init_player0_turn()
+        tribe0 = self._gs.get_tribe(0)
         self._prev_score = self._gs.get_score(0)
+        self._prev_cities = tribe0.get_num_cities()
+        self._prev_techs = tribe0.get_tech_tree().get_num_researched()
+        self._prev_kills = tribe0.get_n_kills()
+        best_opp = (
+            max(self._gs.get_score(i) for i in range(1, self._n_players))
+        ) if self._n_players > 1 else 0.0
+        self._prev_relative_score = float(self._prev_score) - best_opp
 
         return self._get_obs(), {"action_mask": self._get_action_mask()}
 
@@ -208,7 +269,6 @@ class TribesEnv(gym.Env):
         assert self._gs is not None, "Call reset() before step()"
 
         tribe0 = self._gs.get_tribe(0)
-        self._prev_score = self._gs.get_score(0)
 
         legal = self._legal_actions
         idx = min(int(action_idx), len(legal) - 1)
@@ -238,7 +298,28 @@ class TribesEnv(gym.Env):
             self._update_legal_actions()
 
         score = self._gs.get_score(0)
-        reward = float(score - self._prev_score)
+        cities = tribe0.get_num_cities()
+        techs = tribe0.get_tech_tree().get_num_researched()
+        kills = tribe0.get_n_kills()
+
+        best_opp = (
+            max(self._gs.get_score(i) for i in range(1, self._n_players))
+        ) if self._n_players > 1 else 0.0
+        relative_score = float(score) - best_opp
+
+        reward = (
+            (relative_score - self._prev_relative_score) / _SCORE_NORM
+            + _CITY_BONUS * (cities - self._prev_cities)
+            + _TECH_BONUS * (techs - self._prev_techs)
+            + _KILL_BONUS * (kills - self._prev_kills)
+        )
+
+        self._prev_score = score
+        self._prev_cities = cities
+        self._prev_techs = techs
+        self._prev_kills = kills
+        self._prev_relative_score = relative_score
+
         terminated = self._gs.is_game_over()
 
         if terminated:
@@ -246,7 +327,16 @@ class TribesEnv(gym.Env):
             if result is RESULT.WIN:
                 reward += WIN_REWARD
             elif result is RESULT.LOSS:
-                reward += LOSS_REWARD
+                # Scale penalty by placement: last place gets full -100, higher
+                # placements get a proportionally smaller penalty so the agent
+                # learns that staying competitive in multi-player games matters.
+                final_score = self._gs.get_score(0)
+                n_ahead = sum(
+                    1 for i in range(1, self._n_players)
+                    if self._gs.get_score(i) > final_score
+                )
+                loss_scale = n_ahead / max(self._n_players - 1, 1)
+                reward += LOSS_REWARD * loss_scale
 
         obs = self._get_obs()
         info = {"action_mask": self._get_action_mask()}

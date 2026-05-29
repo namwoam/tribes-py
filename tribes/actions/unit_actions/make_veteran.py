@@ -22,6 +22,8 @@ class MakeVeteran(UnitAction):
 
     def is_feasible(self, gs: GameState) -> bool:
         unit = gs.get_actor(self.unit_id)
+        if unit is None:
+            return False
         if unit.get_type() is UNIT_TYPE.SUPERUNIT:
             return False
         return unit.get_kills() >= cfg.VETERAN_KILLS and not unit.is_veteran()

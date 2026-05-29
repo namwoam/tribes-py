@@ -46,12 +46,17 @@ def test_build_env_has_correct_spaces():
         "resource",
         "building",
         "unit_type",
-        "unit_tribe",
+        *(f"unit_tribe_{k}" for k in range(8)),
+        "unit_hp",
+        "unit_fresh",
+        "city_owner",
+        "is_road",
         "tribe_stars",
         "tribe_score",
         "tribe_cities",
         "tribe_kills",
         "tribe_techs",
+        "game_tick",
     }
     env.close()
 

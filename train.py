@@ -55,11 +55,18 @@ def run_sb3(
     from sb3_contrib import MaskablePPO
     from sb3_contrib.common.wrappers import ActionMasker
     from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
+    from tribes.model import TribesFeatureExtractor
 
     env = build_curriculum_env(seed, self_play_sync) if curriculum else build_env(seed)
     masked_env = ActionMasker(env, lambda e: e.action_masks())
 
     tb_log = tensorboard_log or None
+
+    policy_kwargs = dict(
+        features_extractor_class=TribesFeatureExtractor,
+        features_extractor_kwargs=dict(features_dim=512),
+        net_arch=dict(pi=[512, 256], vf=[512, 256]),
+    )
 
     if resume:
         model = MaskablePPO.load(resume, env=masked_env, tensorboard_log=tb_log)
@@ -68,6 +75,7 @@ def run_sb3(
         model = MaskablePPO(
             policy="MultiInputPolicy",
             env=masked_env,
+            policy_kwargs=policy_kwargs,
             learning_rate=lr,
             n_steps=n_steps,
             batch_size=batch_size,
@@ -187,7 +195,7 @@ def run_sb3(
 # Environment
 @click.option("--seed", default=0, type=int)
 # Training schedule
-@click.option("--total-steps", default=500_000, type=int, help="Total env steps.")
+@click.option("--total-steps", default=3_000_000, type=int, help="Total env steps.")
 @click.option("--n-steps", default=2048, type=int, help="Rollout length.")
 @click.option(
     "--save", default="runs/model", type=str, help="Output path (no ext for SB3)."
@@ -203,14 +211,14 @@ def run_sb3(
     help="Sync self-play snapshot every N gradient updates.",
 )
 # Hyper-parameters
-@click.option("--lr", default=3e-4, type=float, help="Learning rate.")
+@click.option("--lr", default=1e-4, type=float, help="Learning rate.")
 @click.option("--n-epochs", default=10, type=int, help="Gradient epochs per rollout.")
-@click.option("--batch-size", default=64, type=int)
+@click.option("--batch-size", default=256, type=int)
 @click.option("--gamma", default=0.99, type=float, help="Discount factor.")
 @click.option("--gae-lambda", default=0.95, type=float)
 @click.option("--clip-eps", default=0.2, type=float, help="PPO clip range.")
 @click.option("--value-coef", default=0.5, type=float)
-@click.option("--entropy-coef", default=0.03, type=float)
+@click.option("--entropy-coef", default=0.01, type=float)
 @click.option("--max-grad-norm", default=0.5, type=float)
 # Logging / visualisation
 @click.option(
