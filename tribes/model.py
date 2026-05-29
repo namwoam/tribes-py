@@ -12,21 +12,30 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 _MAX_BOARD = 24
 _MAX_TRIBES = 8
 
-# 9 spatial channels in order: terrain, resource, building, unit_type, unit_tribe,
-# unit_hp, unit_fresh, city_owner, is_road.
+# 16 spatial channels: terrain, resource, building, unit_type,
+# 8× unit_tribe binary planes (one per relative player), unit_hp, unit_fresh,
+# city_owner, is_road.
 # Per-channel normalisation: (offset, scale) → (val + offset) / scale ∈ [0, 1].
 _SPATIAL_NORM = [
-    (0.0, 7.0),    # terrain      [0, 7]
-    (1.0, 8.0),    # resource     [-1, 7]
-    (1.0, 19.0),   # building     [-1, 18]
-    (1.0, 12.0),   # unit_type    [-1, 11]
-    (1.0, 8.0),    # unit_tribe   [-1, 7]  → 0=self, 1..7=opponents
-    (1.0, 11.0),   # unit_hp      [-1, 10] → -1=none, 0-10=HP×10
-    (1.0, 2.0),    # unit_fresh   [-1, 1]  → -1=none, 0=spent, 1=fresh
-    (1.0, 3.0),    # city_owner   [-1, 2]  → -1=none, 0=neutral, 1=own, 2=enemy
-    (0.0, 1.0),    # is_road      [0, 1]
+    (0.0, 7.0),    # terrain         [0, 7]
+    (1.0, 8.0),    # resource        [-1, 7]
+    (1.0, 19.0),   # building        [-1, 18]
+    (1.0, 12.0),   # unit_type       [-1, 11]
+    # 8 binary planes: unit_tribe_0 (self) … unit_tribe_7 (7th opponent)
+    (0.0, 1.0),    # unit_tribe_0    {0, 1}
+    (0.0, 1.0),    # unit_tribe_1    {0, 1}
+    (0.0, 1.0),    # unit_tribe_2    {0, 1}
+    (0.0, 1.0),    # unit_tribe_3    {0, 1}
+    (0.0, 1.0),    # unit_tribe_4    {0, 1}
+    (0.0, 1.0),    # unit_tribe_5    {0, 1}
+    (0.0, 1.0),    # unit_tribe_6    {0, 1}
+    (0.0, 1.0),    # unit_tribe_7    {0, 1}
+    (1.0, 11.0),   # unit_hp         [-1, 10]
+    (1.0, 2.0),    # unit_fresh      [-1, 1]
+    (1.0, 3.0),    # city_owner      [-1, 2]
+    (0.0, 1.0),    # is_road         {0, 1}
 ]
-_N_SPATIAL = len(_SPATIAL_NORM)  # 9
+_N_SPATIAL = len(_SPATIAL_NORM)  # 16
 
 # Tribe-stat normalisers
 _STARS_SCALE  = 100.0
@@ -67,8 +76,8 @@ class TribesFeatureExtractor(BaseFeaturesExtractor):
 
     Architecture
     ------------
-    Spatial branch (9 board channels)
-        Entry conv  9 → 64,  24×24
+    Spatial branch (16 board channels)
+        Entry conv  16 → 64,  24×24
         ResBlock    64,       24×24
         MaxPool              → 12×12
         Conv        64 → 128, 12×12
@@ -93,7 +102,7 @@ class TribesFeatureExtractor(BaseFeaturesExtractor):
         super().__init__(observation_space, features_dim)
 
         self.spatial_enc = nn.Sequential(
-            # Entry: 9 → 64, keep 24×24
+            # Entry: 16 → 64, keep 24×24
             nn.Conv2d(_N_SPATIAL, 64, 3, padding=1, bias=False),
             _ResBlock(64),
             nn.MaxPool2d(2),          # → 12×12
@@ -138,7 +147,14 @@ class TribesFeatureExtractor(BaseFeaturesExtractor):
                 obs["resource"],
                 obs["building"],
                 obs["unit_type"],
-                obs["unit_tribe"],
+                obs["unit_tribe_0"],
+                obs["unit_tribe_1"],
+                obs["unit_tribe_2"],
+                obs["unit_tribe_3"],
+                obs["unit_tribe_4"],
+                obs["unit_tribe_5"],
+                obs["unit_tribe_6"],
+                obs["unit_tribe_7"],
                 obs["unit_hp"],
                 obs["unit_fresh"],
                 obs["city_owner"],

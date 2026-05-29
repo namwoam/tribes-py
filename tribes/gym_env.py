@@ -59,7 +59,11 @@ def game_state_to_obs(gs, perspective: int = 0) -> dict:
     resource   = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
     building   = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
     unit_type  = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
-    unit_tribe = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
+    # One binary plane per relative player: unit_tribe_planes[k, x, y] = 1 iff
+    # the k-th relative player (0=self, 1=opp1, …) has a unit at (x, y).
+    # Binary planes avoid the false linear ordering of a single ordinal channel
+    # where empty/self/enemy all differ by the same tiny 0.125 step.
+    unit_tribe_planes = np.zeros((MAX_N_TRIBES, MAX_BOARD_SIZE, MAX_BOARD_SIZE), dtype=np.int8)
     # New channels
     unit_hp    = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
     unit_fresh = np.full((MAX_BOARD_SIZE, MAX_BOARD_SIZE), -1, dtype=np.int8)
@@ -80,9 +84,8 @@ def game_state_to_obs(gs, perspective: int = 0) -> dict:
             unit = board.get_unit_at(x, y)
             if unit is not None:
                 unit_type[x, y] = unit.get_type().get_key()
-                # Encode relative player index: 0=self, 1=next opponent, 2=opponent after, …
-                # so the agent can distinguish which enemy is which in multi-player games.
-                unit_tribe[x, y] = (unit.tribe_id - perspective) % n_players
+                rel_idx = (unit.tribe_id - perspective) % n_players
+                unit_tribe_planes[rel_idx, x, y] = 1
                 max_hp = unit.get_max_hp()
                 unit_hp[x, y] = round(10 * unit.get_current_hp() / max_hp) if max_hp > 0 else 0
                 unit_fresh[x, y] = 1 if unit.is_fresh() else 0
@@ -118,7 +121,7 @@ def game_state_to_obs(gs, perspective: int = 0) -> dict:
         "resource": resource,
         "building": building,
         "unit_type": unit_type,
-        "unit_tribe": unit_tribe,
+        **{f"unit_tribe_{k}": unit_tribe_planes[k] for k in range(MAX_N_TRIBES)},
         "unit_hp": unit_hp,
         "unit_fresh": unit_fresh,
         "city_owner": city_owner,
@@ -186,7 +189,8 @@ class TribesEnv(gym.Env):
                 "resource": spaces.Box(-1, 7, board_shape, dtype=np.int8),
                 "building": spaces.Box(-1, 18, board_shape, dtype=np.int8),
                 "unit_type": spaces.Box(-1, 11, board_shape, dtype=np.int8),
-                "unit_tribe": spaces.Box(-1, MAX_N_TRIBES - 1, board_shape, dtype=np.int8),
+                **{f"unit_tribe_{k}": spaces.Box(0, 1, board_shape, dtype=np.int8)
+                   for k in range(MAX_N_TRIBES)},
                 "tribe_stars": spaces.Box(0, 2**15, (MAX_N_TRIBES,), dtype=np.int32),
                 "tribe_score": spaces.Box(0, 2**15, (MAX_N_TRIBES,), dtype=np.int32),
                 "tribe_cities": spaces.Box(
