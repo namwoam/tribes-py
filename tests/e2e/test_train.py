@@ -47,11 +47,16 @@ def test_build_env_has_correct_spaces():
         "building",
         "unit_type",
         "unit_tribe",
+        "unit_hp",
+        "unit_fresh",
+        "city_owner",
+        "is_road",
         "tribe_stars",
         "tribe_score",
         "tribe_cities",
         "tribe_kills",
         "tribe_techs",
+        "game_tick",
     }
     env.close()
 
