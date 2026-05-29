@@ -208,6 +208,10 @@ class TribesEnv(gym.Env):
         self._n_players: int = 0
         self._legal_actions: list = []
         self._prev_score: int = 0
+        self._prev_cities: int = 0
+        self._prev_techs: int = 0
+        self._prev_kills: int = 0
+        self._prev_relative_score: float = 0.0
         self._rng: random.Random = random.Random(seed)
 
     # ------------------------------------------------------------------
@@ -245,7 +249,15 @@ class TribesEnv(gym.Env):
             opp.set_player_ids(i + 1, list(range(self._n_players)))
 
         self._init_player0_turn()
+        tribe0 = self._gs.get_tribe(0)
         self._prev_score = self._gs.get_score(0)
+        self._prev_cities = tribe0.get_num_cities()
+        self._prev_techs = tribe0.get_tech_tree().get_num_researched()
+        self._prev_kills = tribe0.get_n_kills()
+        best_opp = (
+            max(self._gs.get_score(i) for i in range(1, self._n_players))
+        ) if self._n_players > 1 else 0.0
+        self._prev_relative_score = float(self._prev_score) - best_opp
 
         return self._get_obs(), {"action_mask": self._get_action_mask()}
 
@@ -253,7 +265,6 @@ class TribesEnv(gym.Env):
         assert self._gs is not None, "Call reset() before step()"
 
         tribe0 = self._gs.get_tribe(0)
-        self._prev_score = self._gs.get_score(0)
 
         legal = self._legal_actions
         idx = min(int(action_idx), len(legal) - 1)
@@ -283,7 +294,28 @@ class TribesEnv(gym.Env):
             self._update_legal_actions()
 
         score = self._gs.get_score(0)
-        reward = float(score - self._prev_score)
+        cities = tribe0.get_num_cities()
+        techs = tribe0.get_tech_tree().get_num_researched()
+        kills = tribe0.get_n_kills()
+
+        best_opp = (
+            max(self._gs.get_score(i) for i in range(1, self._n_players))
+        ) if self._n_players > 1 else 0.0
+        relative_score = float(score) - best_opp
+
+        reward = (
+            (relative_score - self._prev_relative_score) / _SCORE_NORM
+            + _CITY_BONUS * (cities - self._prev_cities)
+            + _TECH_BONUS * (techs - self._prev_techs)
+            + _KILL_BONUS * (kills - self._prev_kills)
+        )
+
+        self._prev_score = score
+        self._prev_cities = cities
+        self._prev_techs = techs
+        self._prev_kills = kills
+        self._prev_relative_score = relative_score
+
         terminated = self._gs.is_game_over()
 
         if terminated:
@@ -291,7 +323,16 @@ class TribesEnv(gym.Env):
             if result is RESULT.WIN:
                 reward += WIN_REWARD
             elif result is RESULT.LOSS:
-                reward += LOSS_REWARD
+                # Scale penalty by placement: last place gets full -100, higher
+                # placements get a proportionally smaller penalty so the agent
+                # learns that staying competitive in multi-player games matters.
+                final_score = self._gs.get_score(0)
+                n_ahead = sum(
+                    1 for i in range(1, self._n_players)
+                    if self._gs.get_score(i) > final_score
+                )
+                loss_scale = n_ahead / max(self._n_players - 1, 1)
+                reward += LOSS_REWARD * loss_scale
 
         obs = self._get_obs()
         info = {"action_mask": self._get_action_mask()}
